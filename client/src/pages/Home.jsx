@@ -1,7 +1,13 @@
+import Navbar from "../components/Navbar";
+import Hero from "../components/Hero";
+import Features from "../components/Features";
+
 function Home() {
   return (
-    <div className="p-10 text-3xl">
-      SpendPilot AI
+    <div>
+      <Navbar />
+      <Hero />
+      <Features />
     </div>
   );
 }
