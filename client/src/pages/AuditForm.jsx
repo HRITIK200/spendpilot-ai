@@ -1,9 +1,17 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { toolData } from "../data/toolData";
+import { generateAudit } from "../utils/auditEngine";
+
 
 const AuditForm = () => {
+
+  const navigate = useNavigate();
+
   const [tools, setTools] = useState(() => {
   const savedTools = localStorage.getItem("auditTools");
+  
 
   return savedTools
     ? JSON.parse(savedTools)
@@ -44,16 +52,33 @@ const AuditForm = () => {
   const handleChange = (id, field, value) => {
 
     const updatedTools = tools.map((tool) => {
-      if (tool.id === id) return tool;
 
+      //keep other tools unchanged
+      if (tool.id !== id) return tool;
+      
+      //update the current tool
       const updatedTool = { ...tool, [field]: value };
+
+      //reset plan when tool changes
+      if(field === "tool") {
+        updatedTool.plan = "";
+        updatedTool.monthlyCost = "";
+      }
+      
+      //auto-fill pricing
       if (field === "plan") {
 
-        const selectedTool = toolData.find((item) => item.tool === updatedTool.tool);
-        const selectedPlan = selectedTool?.plans.find((plan) => plan.name === value);
+        const selectedTool = toolData.find(
+          (item) => item.tool === updatedTool.tool
+        );
+
+        const selectedPlan = selectedTool?.plans.find(
+          (plan) => plan.name === value
+        );
 
         if (selectedPlan) {
-          updatedTool.monthlyCost = selectedPlan.monthlyPrice;
+          updatedTool.monthlyCost = 
+             selectedPlan.monthlyPrice;
         }
       }
       return updatedTool;
@@ -61,6 +86,17 @@ const AuditForm = () => {
 
     setTools(updatedTools);
   };
+
+  const handleGenerateReport = () => {
+
+    const auditResults = generateAudit(tools);
+
+    // Save results to localStorage for now
+    localStorage.setItem("auditResults", JSON.stringify(auditResults));
+
+    // Navigate to results page
+    navigate("/results");
+  }
 
   return (
     <div className="min-h-screen bg-gray-950 text-white px-6 py-10">
@@ -138,8 +174,8 @@ const AuditForm = () => {
                     {toolData
                       .find((t) => t.tool === tool.tool)
                       ?.plans.map((plan) => (
-                        <option key={plan} value={plan}>
-                          {plan}
+                        <option key={plan.name} value={plan.name}>
+                          {plan.name}
                         </option>
                       ))}
                   </select>
@@ -155,12 +191,10 @@ const AuditForm = () => {
                     type="number"
                     placeholder="20"
                     value={tool.monthlyCost}
-                    onChange={(e) =>
-                      handleChange(tool.id, "monthlyCost", e.target.value)
-                    }
-                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-blue-500"
+                    readOnly
+                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-blue-500 cursor-not-allowed"
                   />
-                </div>
+                 </div> 
 
                 {/* Seats */}
                 <div>
@@ -216,7 +250,8 @@ const AuditForm = () => {
         {/* Submit Button */}
         <div className="mt-10">
           <button
-            className="w-full bg-green-600 hover:bg-green-700 py-4 rounded-2xl text-lg font-semibold transition"
+            onClick={handleGenerateReport}
+            className="bg-green-600 hover:bg-green-700 px-8 py-4 rounded-xl font-semibold transition"
           >
             Generate Audit Report
           </button>
