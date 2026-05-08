@@ -1,14 +1,18 @@
-export const tools = [
+export const toolData = [
   {
+    id: 1,
     name: "ChatGPT",
+    category: "AI Assistant",
     plans: [
       {
         name: "Plus",
-        price: 20
+        monthlyPrice: 20,
+        recommendedTeamSize: 1,
       },
       {
         name: "Team",
-        price: 30
+        monthlyPrice: 30,
+        recommendedTeamSize: 3,
       }
     ]
   }

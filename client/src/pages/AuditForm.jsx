@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { toolData } from "../data/toolData";
 
 const AuditForm = () => {
   const [tools, setTools] = useState(() => {
@@ -9,10 +10,10 @@ const AuditForm = () => {
     : [
         {
           id: 1,
-          toolName: "",
-          category: "",
+          tool: "",
+          plan: "",
           monthlyCost: "",
-          teamSize: "",
+          seats: 1,
           useCase: "",
         },
       ];
@@ -27,10 +28,10 @@ const AuditForm = () => {
       ...tools,
       {
         id: Date.now(),
-        toolName: "",
-        category: "",
+        tool: "",
+        plan: "",
         monthlyCost: "",
-        teamSize: "",
+        seats: 1,
         useCase: "",
       },
     ]);
@@ -41,11 +42,24 @@ const AuditForm = () => {
   };
 
   const handleChange = (id, field, value) => {
-    setTools(
-      tools.map((tool) =>
-        tool.id === id ? { ...tool, [field]: value } : tool
-      )
-    );
+
+    const updatedTools = tools.map((tool) => {
+      if (tool.id === id) return tool;
+
+      const updatedTool = { ...tool, [field]: value };
+      if (field === "plan") {
+
+        const selectedTool = toolData.find((item) => item.tool === updatedTool.tool);
+        const selectedPlan = selectedTool?.plans.find((plan) => plan.name === value);
+
+        if (selectedPlan) {
+          updatedTool.monthlyCost = selectedPlan.monthlyPrice;
+        }
+      }
+      return updatedTool;
+    });
+
+    setTools(updatedTools);
   };
 
   return (
@@ -86,42 +100,48 @@ const AuditForm = () => {
               {/* Inputs */}
               <div className="grid md:grid-cols-2 gap-5">
                 
-                {/* Tool Name */}
+              {/* Tool Selection */}
                 <div>
                   <label className="block mb-2 text-sm text-gray-300">
-                    Tool Name
-                  </label>
-
-                  <input
-                    type="text"
-                    placeholder="ChatGPT"
-                    value={tool.toolName}
-                    onChange={(e) =>
-                      handleChange(tool.id, "toolName", e.target.value)
-                    }
-                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-blue-500"
-                  />
-                </div>
-
-                {/* Category */}
-                <div>
-                  <label className="block mb-2 text-sm text-gray-300">
-                    Category
+                    AI Tool
                   </label>
 
                   <select
-                    value={tool.category}
+                    value={tool.tool}
                     onChange={(e) =>
-                      handleChange(tool.id, "category", e.target.value)
+                      handleChange(tool.id, "tool", e.target.value)
                     }
                     className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-blue-500"
                   >
-                    <option value="">Select Category</option>
-                    <option value="Writing">Writing</option>
-                    <option value="Design">Design</option>
-                    <option value="Coding">Coding</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="Automation">Automation</option>
+                    <option value="">Select AI Tool</option>
+                    {toolData.map((t) => (
+                      <option key={t.tool} value={t.tool}>
+                        {t.tool}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Plan Selection */}
+                <div>
+                  <label className="block mb-2 text-sm text-gray-300">
+                    Plan
+                  </label>
+
+                  <select
+                    value={tool.plan}
+                    onChange={(e) =>
+                      handleChange(tool.id, "plan", e.target.value)
+                    }
+                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-blue-500">
+                    <option value="">Select Plan</option>
+                    {toolData
+                      .find((t) => t.tool === tool.tool)
+                      ?.plans.map((plan) => (
+                        <option key={plan} value={plan}>
+                          {plan}
+                        </option>
+                      ))}
                   </select>
                 </div>
 
@@ -141,35 +161,43 @@ const AuditForm = () => {
                     className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-blue-500"
                   />
                 </div>
-                {/* Team Size */}
+
+                {/* Seats */}
                 <div>
                  <label className="block mb-2 text-sm text-gray-300">
-                   Team Size
+                    Seats/Users
                  </label>
 
                   <input
                    type="number"
                    placeholder="10"
-                   value={tool.teamSize}
+                   value={tool.seats}
                     onChange={(e) =>
-                      handleChange(tool.id, "teamSize", e.target.value)
+                      handleChange(tool.id, "seats", e.target.value)
                        }
                      className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-blue-500"
                          />
                  </div>
+
                   {/* Use Case */}
                   <div className="md:col-span-2">
                     <label className="block mb-2 text-sm text-gray-300">
                        Use Case
                     </label>
-                    <textarea
-                      placeholder="Describe how your team uses this tool..."
+                    
+                    <select
                       value={tool.useCase}
                       onChange={(e) =>
                         handleChange(tool.id, "useCase", e.target.value)
                       }
-                      className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-blue-500 resize-none h-24"
-                    />
+                      className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-blue-500">
+                      <option value="">Select Use Case</option>
+
+                      <option value="coding">Coding/Development</option>
+                      <option value="writing">Writing/Content Creation</option>
+                      <option value="research">Research/Data Analysis</option>
+                      <option value="mixed">Mixed/Other</option>
+                      </select>
                     </div>
 
               </div>
