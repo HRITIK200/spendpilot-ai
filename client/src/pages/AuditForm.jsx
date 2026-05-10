@@ -3,11 +3,19 @@ import { useNavigate } from "react-router-dom";
 
 import { toolData } from "../data/toolData";
 import { generateAudit } from "../utils/auditEngine";
+import { saveReport } from "../api/reportApi";
 
 
 const AuditForm = () => {
 
+  useEffect(() => {
+  document.title =
+    "AI Audit Form | SpendPilot AI";
+   }, []);
+
   const navigate = useNavigate();
+
+  const [loading, setLoading] = useState(false);
 
   const [tools, setTools] = useState(() => {
   const savedTools = localStorage.getItem("auditTools");
@@ -87,16 +95,33 @@ const AuditForm = () => {
     setTools(updatedTools);
   };
 
-  const handleGenerateReport = () => {
+  const handleGenerateReport = async () => {
+    
+    setLoading(true);
+    
+    try {
 
-    const auditResults = generateAudit(tools);
+      //generate audit analysis
+      const auditResults = generateAudit(tools);
 
-    // Save results to localStorage for now
-    localStorage.setItem("auditResults", JSON.stringify(auditResults));
+      //save report to MongoDB
+      const savedReport = await saveReport(auditResults);
 
-    // Navigate to results page
-    navigate("/results");
-  }
+      //save locally for quick access
+      localStorage.setItem("auditResults", JSON.stringify(savedReport));
+
+      //navigate to results page
+      navigate("/results");
+
+    } catch (error) {
+
+      console.log("Error generating report:", error);
+      alert("Failed to generate report");
+
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-950 text-white px-6 py-10">
@@ -250,10 +275,10 @@ const AuditForm = () => {
         {/* Submit Button */}
         <div className="mt-10">
           <button
-            onClick={handleGenerateReport}
-            className="bg-green-600 hover:bg-green-700 px-8 py-4 rounded-xl font-semibold transition"
+            onClick={handleGenerateReport} disabled={loading}
+            className="bg-green-600 hover:bg-green-700 px-8 py-4 rounded-xl font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Generate Audit Report
+           {loading ? "Generating Report..." : "Generate Audit Report"  }
           </button>
         </div>
       </div>
