@@ -9,7 +9,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://spendpilot-ai-ochre.vercel.app",
+      "https://spendpilot-ai-sandy.vercel.app",
     ],
     credentials: true,
   })
