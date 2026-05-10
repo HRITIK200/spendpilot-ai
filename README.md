@@ -51,13 +51,13 @@ https://spendpilot-backend-84ep.onrender.com
 ## Screenshots
 
 ### Landing Page
-(Add screenshot here)
+![Landing](./screenshot/landing_page.png)
 
 ### Audit Dashboard
-(Add screenshot here)
+![audit](./screenshot/audit_form.png)
 
 ### Results Analytics
-(Add screenshot here)
+![results](./screenshot/results.png)
 
 ---
 
