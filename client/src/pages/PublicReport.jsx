@@ -2,7 +2,7 @@ import {  useEffect, useState } from "react";
 
 import { useParams } from "react-router-dom";
 
-import { getReport } from "../api/reportApi";
+import { getReportById } from "../api/reportApi";
 
 const PublicReport = () => {
 
@@ -23,7 +23,7 @@ const PublicReport = () => {
       try {
 
         const data =
-          await getReport(id);
+          await getReportById(id);
 
         setReport(data);
 

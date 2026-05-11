@@ -1,9 +1,8 @@
-const express = require("express");
+import express from "express";
+
+import Report from "../models/Report.js";
 
 const router = express.Router();
-
-const Report = require("../models/Report");
-
 
 // CREATE REPORT
 
@@ -19,11 +18,10 @@ router.post("/", async (req, res) => {
   } catch (error) {
 
     res.status(500).json({
-      message: error.message,
+      message: "Failed to create report",
     });
   }
 });
-
 
 // GET REPORT BY ID
 
@@ -32,16 +30,18 @@ router.get("/:id", async (req, res) => {
   try {
 
     const report =
-      await Report.findById(req.params.id);
+      await Report.findById(
+        req.params.id
+      );
 
     res.json(report);
 
   } catch (error) {
 
     res.status(500).json({
-      message: error.message,
+      message: "Failed to fetch report",
     });
   }
 });
 
-module.exports = router;
+export default router;

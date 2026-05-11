@@ -1,8 +1,28 @@
 import { useEffect, useState } from "react";
+import { saveLead } from "../api/leadApi";
 
 import { Legend, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 const Results = () => {
+
+  const [email, setEmail] = useState("");
+  const [company, setCompany] = useState("");
+  const [leadSaved, setLeadSaved] = useState(false);
+
+  const handleLeadSubmit = async () => {
+
+    try {
+
+      await saveLead({
+        email,
+        company,
+      });
+
+      setLeadSaved(true);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   useEffect(() => {
   document.title =
@@ -13,6 +33,7 @@ const Results = () => {
     const savedResults = localStorage.getItem("auditResults");
     return savedResults ? JSON.parse(savedResults) : null;
   });
+
 
   const [copied, setCopied] = useState(false);
 
@@ -410,6 +431,46 @@ const Results = () => {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* EMAIL CAPTURE SECTION */}
+
+         <div className="mt-12 bg-gray-900 border border-gray-800 rounded-3xl p-6 md:p-8">
+
+          <h2 className="text-3xl font-bold mb-3">
+            Get Audit Updates
+          </h2>
+
+          <p className="text-gray-400 text-lg mb-6 leading-relaxed">
+            Receive future AI tooling optimization insights and infrastructure recommendations directly in your inbox.
+          </p>
+
+          <div className="grid md:grid-cols-2 gap-4">
+
+          {/* EMAIL INPUT */}
+          <input
+              type="email"
+              placeholder="Enter your email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="bg-gray-800/70 border border-gray-700 rounded-2xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          />
+          {/* COMPANY INPUT */}
+          <input
+              type="text"
+              placeholder="Company name (optional)"
+              value={company}
+              onChange={(e) => setCompany(e.target.value)}
+              className="bg-gray-800/70 border border-gray-700 rounded-2xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          />
+          </div>
+          {/* BUTTON */}
+          <button
+              onClick={handleLeadSubmit}
+              className="mt-4 bg-blue-500 hover:bg-blue-600 px-5 py-3 rounded-2xl font-semibold transition"
+          >
+            {leadSaved ? "Saved Successfully.. Thank you!" : "Get updates"}
+          </button>
         </div>
       </div>
     </div>

@@ -1,27 +1,28 @@
 import axios from "axios";
 
 const API =
-  import.meta.env.VITE_API_URL;
+  `${import.meta.env.VITE_API_BASE_URL}/api/reports`;
 
-
-// SAVE REPORT
-
-export const saveReport = async (data) => {
+export const saveReport = async (
+  reportData
+) => {
 
   const response =
-    await axios.post(API, data);
+    await axios.post(
+      API,
+      reportData
+    );
 
   return response.data;
 };
 
+export const getReportById =
+  async (id) => {
 
-// GET REPORT
+    const response =
+      await axios.get(
+        `${API}/${id}`
+      );
 
-export const getReport = async (id) => {
-
-  const response =
-    await axios.get(`${API}/${id}`);
-
-  return response.data;
+    return response.data;
 };
-console.log(import.meta.env.VITE_API_URL);
