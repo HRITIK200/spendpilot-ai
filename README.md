@@ -43,8 +43,9 @@ https://spendpilot-backend-84ep.onrender.com
 - Mongoose
 
 ### Deployment
-- Vercel (Frontend)
-- Render (Backend)
+
+- Vercel (for Frontend)
+- Render (for Backend)
 
 ---
 
