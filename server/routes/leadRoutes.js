@@ -1,6 +1,7 @@
 import express from "express";
 
 import Lead from "../models/Lead.js";
+import { sendLeadEmail } from "../utils/sendEmail.js";
 
 const router = express.Router();
 
@@ -16,6 +17,9 @@ router.post("/", async (req, res) => {
       email,
       company,
     });
+
+    // Send confirmation email
+    await sendLeadEmail(email);
 
     res.status(201).json(lead);
 
