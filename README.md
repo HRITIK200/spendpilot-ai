@@ -5,7 +5,7 @@ AI-powered SaaS platform that audits company AI tool spending and generates opti
 ## Live Demo
 
 Frontend:
-https://spendpilot-ai-ochre.vercel.app
+https://spendpilot-ai-sandy.vercel.app/
 
 Backend:
 https://spendpilot-backend-84ep.onrender.com
