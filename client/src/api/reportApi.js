@@ -1,26 +1,28 @@
 import axios from "axios";
 
-const API = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
-});
+const API =
+  `${import.meta.env.VITE_API_BASE_URL}/api/reports`;
 
 export const saveReport = async (
   reportData
 ) => {
 
-  const response = await API.post(
-    "/api/reports",
-    reportData
-  );
+  const response =
+    await axios.post(
+      API,
+      reportData
+    );
 
   return response.data;
 };
 
-export const getReport = async (id) => {
+export const getReportById =
+  async (id) => {
 
-  const response = await API.get(
-    `/api/reports/${id}`
-  );
+    const response =
+      await axios.get(
+        `${API}/${id}`
+      );
 
-  return response.data;
+    return response.data;
 };
