@@ -1,6 +1,7 @@
 # SpendPilot AI
 
 AI-powered SaaS platform that audits company AI tool spending and generates optimization recommendations to reduce infrastructure costs.
+
 ![React](https://img.shields.io/badge/React-Frontend-blue)
 
 ![Node.js](https://img.shields.io/badge/Node.js-Backend-green)
