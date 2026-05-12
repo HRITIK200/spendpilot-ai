@@ -26,6 +26,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "https://spendpilot-ai-sandy.vercel.app",
+      "https://spendpilot-i4sx05lyo-hritik200s-projects.vercel.app",
     ],
     credentials: true,
   })
