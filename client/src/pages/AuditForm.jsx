@@ -14,8 +14,8 @@ const AuditForm = () => {
    }, []);
 
   const navigate = useNavigate();
-
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const [tools, setTools] = useState(() => {
   const savedTools = localStorage.getItem("auditTools");
@@ -55,6 +55,46 @@ const AuditForm = () => {
 
   const removeTool = (id) => {
     setTools(tools.filter((tool) => tool.id !== id));
+    // Remove errors for this row if any exist
+    if (errors[id]) {
+      setErrors((prev) => {
+        const updated = { ...prev };
+        delete updated[id];
+        return updated;
+      });
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    let isValid = true;
+
+    tools.forEach((t) => {
+      const toolErrors = {};
+      if (!t.tool) {
+        toolErrors.tool = "AI Tool is required";
+        isValid = false;
+      }
+      if (!t.plan) {
+        toolErrors.plan = "Plan is required";
+        isValid = false;
+      }
+      if (!t.seats || Number(t.seats) <= 0) {
+        toolErrors.seats = "Seats must be greater than 0";
+        isValid = false;
+      }
+      if (!t.useCase) {
+        toolErrors.useCase = "Use case is required";
+        isValid = false;
+      }
+
+      if (Object.keys(toolErrors).length > 0) {
+        newErrors[t.id] = toolErrors;
+      }
+    });
+
+    setErrors(newErrors);
+    return isValid;
   };
 
   const handleChange = (id, field, value) => {
@@ -93,9 +133,49 @@ const AuditForm = () => {
     });
 
     setTools(updatedTools);
+
+    // Clear dynamic error for this field
+    if (errors[id]?.[field]) {
+      setErrors((prev) => {
+        const updated = { ...prev };
+        if (updated[id]) {
+          delete updated[id][field];
+          if (Object.keys(updated[id]).length === 0) {
+            delete updated[id];
+          }
+        }
+        return updated;
+      });
+    }
+  };
+
+  const getToolBorderClass = (toolName) => {
+    switch (toolName) {
+      case "ChatGPT":
+        return "border-t-4 border-t-emerald-500 border-x-gray-800 border-b-gray-800";
+      case "Claude":
+        return "border-t-4 border-t-orange-500 border-x-gray-800 border-b-gray-800";
+      case "Cursor":
+        return "border-t-4 border-t-blue-500 border-x-gray-800 border-b-gray-800";
+      case "GitHub Copilot":
+        return "border-t-4 border-t-slate-500 border-x-gray-800 border-b-gray-800";
+      case "Gemini":
+        return "border-t-4 border-t-indigo-500 border-x-gray-800 border-b-gray-800";
+      case "OpenAI API":
+        return "border-t-4 border-t-teal-500 border-x-gray-800 border-b-gray-800";
+      case "Anthropic API":
+        return "border-t-4 border-t-amber-600 border-x-gray-800 border-b-gray-800";
+      case "Windsurf":
+        return "border-t-4 border-t-cyan-500 border-x-gray-800 border-b-gray-800";
+      default:
+        return "border-gray-800";
+    }
   };
 
   const handleGenerateReport = async () => {
+    if (!validateForm()) {
+      return;
+    }
     
     setLoading(true);
     
@@ -141,7 +221,7 @@ const AuditForm = () => {
           {tools.map((tool, index) => (
             <div
               key={tool.id}
-              className="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-lg"
+              className={`bg-gray-900 border ${getToolBorderClass(tool.tool)} rounded-2xl p-6 shadow-lg transition-all duration-300`}
             >
               <div className="flex items-center justify-between mb-5">
                 <h2 className="text-xl font-semibold">
@@ -172,7 +252,9 @@ const AuditForm = () => {
                     onChange={(e) =>
                       handleChange(tool.id, "tool", e.target.value)
                     }
-                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-blue-500"
+                    className={`w-full bg-gray-800 border ${
+                      errors[tool.id]?.tool ? "border-red-500 focus:border-red-500" : "border-gray-700 focus:border-blue-500"
+                    } rounded-xl px-4 py-3 outline-none transition`}
                   >
                     <option value="">Select AI Tool</option>
                     {toolData.map((t) => (
@@ -181,6 +263,9 @@ const AuditForm = () => {
                       </option>
                     ))}
                   </select>
+                  {errors[tool.id]?.tool && (
+                    <p className="text-red-500 text-xs mt-1">{errors[tool.id].tool}</p>
+                  )}
                 </div>
 
                 {/* Plan Selection */}
@@ -194,7 +279,10 @@ const AuditForm = () => {
                     onChange={(e) =>
                       handleChange(tool.id, "plan", e.target.value)
                     }
-                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-blue-500">
+                    className={`w-full bg-gray-800 border ${
+                      errors[tool.id]?.plan ? "border-red-500 focus:border-red-500" : "border-gray-700 focus:border-blue-500"
+                    } rounded-xl px-4 py-3 outline-none transition`}
+                  >
                     <option value="">Select Plan</option>
                     {toolData
                       .find((t) => t.tool === tool.tool)
@@ -204,6 +292,9 @@ const AuditForm = () => {
                         </option>
                       ))}
                   </select>
+                  {errors[tool.id]?.plan && (
+                    <p className="text-red-500 text-xs mt-1">{errors[tool.id].plan}</p>
+                  )}
                 </div>
 
                 {/* Monthly Cost */}
@@ -217,7 +308,7 @@ const AuditForm = () => {
                     placeholder="20"
                     value={tool.monthlyCost}
                     readOnly
-                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-blue-500 cursor-not-allowed"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-blue-500 cursor-not-allowed text-gray-400"
                   />
                  </div> 
 
@@ -234,8 +325,13 @@ const AuditForm = () => {
                     onChange={(e) =>
                       handleChange(tool.id, "seats", e.target.value)
                        }
-                     className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-blue-500"
-                         />
+                     className={`w-full bg-gray-800 border ${
+                      errors[tool.id]?.seats ? "border-red-500 focus:border-red-500" : "border-gray-700 focus:border-blue-500"
+                    } rounded-xl px-4 py-3 outline-none transition`}
+                  />
+                  {errors[tool.id]?.seats && (
+                    <p className="text-red-500 text-xs mt-1">{errors[tool.id].seats}</p>
+                  )}
                  </div>
 
                   {/* Use Case */}
@@ -249,7 +345,10 @@ const AuditForm = () => {
                       onChange={(e) =>
                         handleChange(tool.id, "useCase", e.target.value)
                       }
-                      className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-blue-500">
+                      className={`w-full bg-gray-800 border ${
+                        errors[tool.id]?.useCase ? "border-red-500 focus:border-red-500" : "border-gray-700 focus:border-blue-500"
+                      } rounded-xl px-4 py-3 outline-none transition`}
+                    >
                       <option value="">Select Use Case</option>
 
                       <option value="coding">Coding/Development</option>
@@ -257,6 +356,9 @@ const AuditForm = () => {
                       <option value="research">Research/Data Analysis</option>
                       <option value="mixed">Mixed/Other</option>
                       </select>
+                      {errors[tool.id]?.useCase && (
+                      <p className="text-red-500 text-xs mt-1">{errors[tool.id].useCase}</p>
+                    )}
                     </div>
 
               </div>
