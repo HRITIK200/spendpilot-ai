@@ -186,6 +186,11 @@ const AuditForm = () => {
       //save locally for quick access
       localStorage.setItem("auditResults", JSON.stringify(savedReport));
 
+      // append to past audits history
+      const existingHistory = JSON.parse(localStorage.getItem("spendpilot_history") || "[]");
+      const newHistory = [savedReport, ...existingHistory.filter((h) => h._id !== savedReport._id)].slice(0, 10);
+      localStorage.setItem("spendpilot_history", JSON.stringify(newHistory));
+
       //navigate to results page
       navigate("/results");
 

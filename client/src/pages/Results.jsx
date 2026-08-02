@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, X } from "lucide-react";
 import { saveLead } from "../api/leadApi";
 import Toast from "../components/Toast";
 
@@ -43,6 +43,42 @@ const Results = () => {
     const savedResults = localStorage.getItem("auditResults");
     return savedResults ? JSON.parse(savedResults) : null;
   });
+
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedTime, setSelectedTime] = useState(null);
+  const [bookingLoading, setBookingLoading] = useState(false);
+
+  const getAvailableDates = () => {
+    const dates = [];
+    const temp = new Date();
+    while (dates.length < 5) {
+      temp.setDate(temp.getDate() + 1);
+      const day = temp.getDay();
+      if (day !== 0 && day !== 6) { // Exclude Sunday (0) and Saturday (6)
+        dates.push(new Date(temp));
+      }
+    }
+    return dates;
+  };
+  const availableDates = getAvailableDates();
+  const availableTimes = ["10:00 AM", "11:30 AM", "2:00 PM", "3:30 PM", "4:30 PM"];
+
+  const handleConfirmBooking = () => {
+    if (!selectedDate || !selectedTime) return;
+    setBookingLoading(true);
+    setTimeout(() => {
+      setBookingLoading(false);
+      setShowBookingModal(false);
+      const formattedDate = selectedDate.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+      setToast({
+        message: `Consultation scheduled for ${formattedDate} at ${selectedTime}! Check your inbox for the calendar invite.`,
+        type: "success"
+      });
+      setSelectedDate(null);
+      setSelectedTime(null);
+    }, 1000);
+  };
 
 
   const [copied, setCopied] = useState(false);
@@ -463,24 +499,26 @@ const Results = () => {
 
          
         {/* CTA SECTION */}
+        <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/10 border border-blue-500/20 rounded-3xl p-8 mb-12 no-print">
+          <h2 className="text-3xl font-bold mb-4">
+            {results.totalMonthlySavings >= 500 
+              ? "Significant Savings Opportunity Detected" 
+              : "Schedule a Free FinOps Audit Review"}
+          </h2>
 
-        {results.totalMonthlySavings >= 500 && (
+          <p className="text-gray-300 text-lg mb-6 leading-relaxed">
+            {results.totalMonthlySavings >= 500 
+              ? "Your organization qualifies for discounted AI credits. Book a free consultation with our team to claim your rewards." 
+              : "Want to double check your cost calculations? Book a 15-min call with our engineering team to review optimization strategies."}
+          </p>
 
-          <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/10 border border-green-500/20 rounded-3xl p-8 mb-12 no-print">
-
-            <h2 className="text-3xl font-bold mb-4">
-              Significant Savings Opportunity Detected
-            </h2>
-
-            <p className="text-gray-300 text-lg mb-6 leading-relaxed">
-              Your organization may benefit from discounted AI infrastructure credits through Credex optimization partnerships.
-            </p>
-
-            <button className="bg-white text-black px-6 py-3 rounded-2xl font-semibold hover:scale-105 transition">
-              Book Credex Consultation
-            </button>
-          </div>
-        )}
+          <button 
+            onClick={() => setShowBookingModal(true)}
+            className="bg-white text-black px-6 py-3 rounded-2xl font-semibold hover:scale-105 transition"
+          >
+            {results.totalMonthlySavings >= 500 ? "Book Credex Consultation" : "Schedule 15-Min Review"}
+          </button>
+        </div>
         
         {/* AI SUMMARY */}
 
@@ -708,8 +746,93 @@ const Results = () => {
           >
             {leadSaved ? "Saved Successfully.. Thank you!" : "Get updates"}
           </button>
-        </div>
       </div>
+
+      {/* BOOKING MODAL */}
+      {showBookingModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4 no-print">
+          <div className="bg-gray-900 border border-gray-800 rounded-3xl p-6 max-w-md w-full relative shadow-2xl animate-toast-in">
+            <button
+              onClick={() => {
+                setShowBookingModal(false);
+                setSelectedDate(null);
+                setSelectedTime(null);
+              }}
+              className="absolute top-5 right-5 text-gray-400 hover:text-white transition p-1.5 hover:bg-gray-800 rounded-lg"
+            >
+              <X size={18} />
+            </button>
+
+            <h3 className="text-xl font-bold text-white mb-1">Schedule FinOps Review</h3>
+            <p className="text-gray-400 text-xs mb-6 font-medium">Select a date and time slot for your audit overview call.</p>
+
+            {/* Date Selection */}
+            <div className="mb-6">
+              <label className="block text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-3">Select Date</label>
+              <div className="grid grid-cols-5 gap-2">
+                {availableDates.map((date, idx) => {
+                  const isSelected = selectedDate && selectedDate.toDateString() === date.toDateString();
+                  const dayStr = date.toLocaleDateString(undefined, { weekday: "short" });
+                  const dateNum = date.getDate();
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedDate(date)}
+                      type="button"
+                      className={`flex flex-col items-center justify-center p-2.5 rounded-xl border transition hover:scale-[1.02] active:scale-[0.98] ${
+                        isSelected 
+                          ? "border-blue-500 bg-blue-500/10 text-blue-400 font-extrabold" 
+                          : "border-gray-800 bg-gray-950/40 text-gray-400 hover:border-gray-750 font-semibold"
+                      }`}
+                    >
+                      <span className="text-[9px] uppercase">{dayStr}</span>
+                      <span className="text-sm mt-0.5">{dateNum}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Time Selection */}
+            <div className="mb-6">
+              <label className="block text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-3">Select Time Slot</label>
+              <div className="grid grid-cols-3 gap-2">
+                {availableTimes.map((time, idx) => {
+                  const isSelected = selectedTime === time;
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedTime(time)}
+                      type="button"
+                      className={`py-2.5 px-3 rounded-xl border text-xs font-semibold transition hover:scale-[1.02] active:scale-[0.98] ${
+                        isSelected 
+                          ? "border-blue-500 bg-blue-500/10 text-blue-400" 
+                          : "border-gray-800 bg-gray-950/40 text-gray-400 hover:border-gray-750"
+                      }`}
+                    >
+                      {time}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Confirm Action Button */}
+            <button
+              onClick={handleConfirmBooking}
+              disabled={!selectedDate || !selectedTime || bookingLoading}
+              className="w-full bg-blue-600 hover:bg-blue-750 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 px-4 rounded-xl transition shadow-lg mt-2 flex items-center justify-center text-sm"
+            >
+              {bookingLoading ? (
+                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+              ) : (
+                "Confirm Booking"
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+
       {toast && (
         <Toast
           message={toast.message}
