@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { toolData } from "../data/toolData";
 import { saveReport } from "../api/reportApi";
+import Tooltip from "../components/Tooltip";
 
 
 const AuditForm = () => {
@@ -246,6 +247,7 @@ const AuditForm = () => {
                 <div className="md:col-span-2">
                   <label className="block mb-2 text-sm text-gray-300 font-medium">
                     Select AI Tool
+                    <Tooltip content="Select the specific generative AI tool you are currently billing." />
                   </label>
 
                   <div className={`grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 bg-gray-950/40 rounded-2xl border ${
@@ -301,6 +303,7 @@ const AuditForm = () => {
                 <div>
                   <label className="block mb-2 text-sm text-gray-300">
                     Plan
+                    <Tooltip content="The plan tier of your subscription. Downgrade recommendations are analyzed based on this value." />
                   </label>
 
                   <select
@@ -333,6 +336,7 @@ const AuditForm = () => {
                 <div>
                   <label className="block mb-2 text-sm text-gray-300">
                     Monthly Cost ($)
+                    <Tooltip content="The standard monthly pricing per seat, pre-filled based on your tool and plan selection." />
                   </label>
 
                   <input
@@ -348,6 +352,7 @@ const AuditForm = () => {
                 <div>
                   <label className="block mb-2 text-sm text-gray-300">
                     Seats/Users
+                    <Tooltip content="The number of active users or license keys. Helps identify over-provisioning and redundancy metrics." />
                   </label>
 
                   <input
@@ -372,6 +377,7 @@ const AuditForm = () => {
                   <div>
                     <label className="block mb-2 text-sm text-gray-300">
                        Use Case
+                       <Tooltip content="The primary workflow context. Flagging development vs general workflows helps suggest specialized tooling." />
                     </label>
                     
                     <select

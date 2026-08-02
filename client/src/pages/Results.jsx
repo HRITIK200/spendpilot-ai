@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, X } from "lucide-react";
+import { ArrowLeft, X, FileSpreadsheet } from "lucide-react";
 import { saveLead } from "../api/leadApi";
 import Toast from "../components/Toast";
 
@@ -78,6 +78,58 @@ const Results = () => {
       setSelectedDate(null);
       setSelectedTime(null);
     }, 1000);
+  };
+
+  const handleExportCSV = () => {
+    if (!results || !results.auditedTools) return;
+
+    // 1. Column headers
+    const headers = [
+      "Tool",
+      "Original Plan",
+      "Seats",
+      "Monthly Cost ($)",
+      "Optimized Plan",
+      "Monthly Savings ($)",
+      "Annual Savings ($)",
+      "Recommendation",
+      "Reasoning"
+    ];
+    
+    // 2. Map audited tools to CSV rows
+    const rows = results.auditedTools.map((tool) => [
+      `"${tool.tool}"`,
+      `"${tool.plan}"`,
+      tool.seats,
+      tool.monthlyCost,
+      `"${tool.optimizedPlan}"`,
+      tool.monthlySavings,
+      tool.annualSavings,
+      `"${tool.recommendation.replace(/"/g, '""')}"`,
+      `"${tool.reasoning.replace(/"/g, '""')}"`
+    ]);
+
+    // 3. Assemble CSV string
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.join(","))
+    ].join("\n");
+
+    // 4. Create and trigger download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `spendpilot_audit_report_${results._id || "export"}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    setToast({
+      message: "Audit report exported to CSV successfully!",
+      type: "success"
+    });
   };
 
 
@@ -359,7 +411,6 @@ const Results = () => {
         </div>
 
         <div className="flex flex-wrap gap-4 mb-12 no-print">
-
           <button 
               onClick={() => {
                 navigator.clipboard.writeText(
@@ -370,18 +421,26 @@ const Results = () => {
                 setToast({ message: "Public report link copied to clipboard!", type: "success" });
                 setTimeout(() => { setCopied(false); }, 2000);
               }}
-              className="bg-blue-500 hover:bg-blue-600 px-5 py-3 rounded-2xl transition-all duration-300"
+              className="bg-blue-500 hover:bg-blue-600 px-5 py-3 rounded-2xl transition-all duration-300 text-sm font-semibold shadow-lg"
           >
             {copied? "Link Copied!" : "Copy Public Report Link"}
           </button>
           
           <button
             onClick={() => window.print()}
-            className="bg-purple-600 hover:bg-purple-700 px-5 py-3 rounded-2xl transition-all duration-300 font-semibold"
+            className="bg-purple-600 hover:bg-purple-700 px-5 py-3 rounded-2xl transition-all duration-300 font-semibold text-sm shadow-lg"
           >
             Download PDF Report
           </button>
-          </div>
+
+          <button
+            onClick={handleExportCSV}
+            className="bg-emerald-600 hover:bg-emerald-700 px-5 py-3 rounded-2xl transition-all duration-300 font-semibold text-sm shadow-lg flex items-center gap-2"
+          >
+            <FileSpreadsheet size={16} />
+            Export CSV
+          </button>
+        </div>
 
         {/* TOP SAVINGS INSIGHT OR FULLY OPTIMIZED BANNER */}
         {topSavingsTool && Number(topSavingsTool.monthlySavings) > 0 ? (
