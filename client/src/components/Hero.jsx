@@ -13,38 +13,38 @@ function Hero() {
   return (
     <section className="min-h-screen flex items-center justify-center px-6 py-20 relative overflow-hidden">
       <style dangerouslySetInnerHTML={{__html: `
-        @keyframes float-up-down {
-          0%, 100% {
-            transform: translateY(0) rotate(-6deg);
-          }
-          50% {
-            transform: translateY(-15px) rotate(-8deg);
-          }
-        }
-        @keyframes float-down-up {
-          0%, 100% {
-            transform: translateY(0) rotate(3deg);
-          }
-          50% {
-            transform: translateY(12px) rotate(1deg);
-          }
-        }
-        @keyframes float-middle {
+        @keyframes float-slow-1 {
           0%, 100% {
             transform: translateY(0) rotate(-3deg);
           }
           50% {
-            transform: translateY(-8px) rotate(-1deg);
+            transform: translateY(-6px) rotate(-3deg);
           }
         }
-        .animate-float-slow {
-          animation: float-up-down 6s ease-in-out infinite;
+        @keyframes float-slow-2 {
+          0%, 100% {
+            transform: translateY(0) rotate(3deg);
+          }
+          50% {
+            transform: translateY(6px) rotate(3deg);
+          }
         }
-        .animate-float {
-          animation: float-down-up 5s ease-in-out infinite;
+        @keyframes float-slow-3 {
+          0%, 100% {
+            transform: translateY(0) rotate(-1deg);
+          }
+          50% {
+            transform: translateY(-5px) rotate(-1deg);
+          }
         }
-        .animate-float-medium {
-          animation: float-middle 4s ease-in-out infinite;
+        .animate-float-slow-1 {
+          animation: float-slow-1 12s ease-in-out infinite;
+        }
+        .animate-float-slow-2 {
+          animation: float-slow-2 10s ease-in-out infinite;
+        }
+        .animate-float-slow-3 {
+          animation: float-slow-3 14s ease-in-out infinite;
         }
       `}} />
 
@@ -53,27 +53,33 @@ function Hero() {
       <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-emerald-500/5 blur-[120px] rounded-full pointer-events-none"></div>
 
       {/* Floating Elements (Visual Polish) */}
-      <div className="hidden lg:block absolute top-[25%] left-[10%] animate-float-slow bg-gray-900/60 backdrop-blur-md border border-white/10 px-4 py-2.5 rounded-2xl shadow-2xl pointer-events-none transform -rotate-6">
-        <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span className="text-xs font-semibold text-gray-200">ChatGPT: Downgraded to Plus</span>
-          <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded-md">Save $20/mo</span>
+      <div className="hidden lg:block absolute top-[20%] left-[6%] animate-float-slow-1 bg-[#0d1527]/80 backdrop-blur-xl border border-white/5 border-l-4 border-l-emerald-500 px-5 py-3.5 rounded-2xl shadow-[0_15px_50px_-15px_rgba(0,0,0,0.8)] pointer-events-none">
+        <div className="flex items-center gap-4">
+          <div>
+            <p className="text-[9px] text-gray-400 uppercase tracking-widest font-bold">Cost Optimization</p>
+            <p className="text-xs font-bold text-white mt-0.5">ChatGPT Pro Migration</p>
+          </div>
+          <span className="text-[10px] text-emerald-400 font-extrabold bg-emerald-500/10 px-2 py-1 rounded-lg">+$240/yr</span>
         </div>
       </div>
 
-      <div className="hidden lg:block absolute bottom-[30%] right-[8%] animate-float bg-gray-900/60 backdrop-blur-md border border-white/10 px-4 py-2.5 rounded-2xl shadow-2xl pointer-events-none transform rotate-3">
-        <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse"></span>
-          <span className="text-xs font-semibold text-gray-200">Windsurf: 12 redundant seats</span>
-          <span className="text-[10px] text-cyan-400 font-bold bg-cyan-500/10 px-1.5 py-0.5 rounded-md">-$360/mo</span>
+      <div className="hidden lg:block absolute top-[38%] right-[8%] animate-float-slow-2 bg-[#0d1527]/80 backdrop-blur-xl border border-white/5 border-l-4 border-l-orange-500 px-5 py-3.5 rounded-2xl shadow-[0_15px_50px_-15px_rgba(0,0,0,0.8)] pointer-events-none">
+        <div className="flex items-center gap-4">
+          <div>
+            <p className="text-[9px] text-gray-400 uppercase tracking-widest font-bold">License Right-Sizing</p>
+            <p className="text-xs font-bold text-white mt-0.5">Claude Team Consolidation</p>
+          </div>
+          <span className="text-[10px] text-orange-400 font-extrabold bg-orange-500/10 px-2 py-1 rounded-lg">100% Score</span>
         </div>
       </div>
 
-      <div className="hidden lg:block absolute top-[40%] right-[12%] animate-float-medium bg-gray-900/60 backdrop-blur-md border border-white/10 px-4 py-2.5 rounded-2xl shadow-2xl pointer-events-none transform -rotate-3">
-        <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-pulse"></span>
-          <span className="text-xs font-semibold text-gray-200">Claude: Team tier right-sized</span>
-          <span className="text-[10px] text-orange-400 font-bold bg-orange-500/10 px-1.5 py-0.5 rounded-md">100% Optimized</span>
+      <div className="hidden lg:block absolute bottom-[28%] left-[5%] animate-float-slow-3 bg-[#0d1527]/80 backdrop-blur-xl border border-white/5 border-l-4 border-l-cyan-500 px-5 py-3.5 rounded-2xl shadow-[0_15px_50px_-15px_rgba(0,0,0,0.8)] pointer-events-none">
+        <div className="flex items-center gap-4">
+          <div>
+            <p className="text-[9px] text-gray-400 uppercase tracking-widest font-bold">Redundant Seats</p>
+            <p className="text-xs font-bold text-white mt-0.5">12 Windsurf Accounts Cut</p>
+          </div>
+          <span className="text-[10px] text-cyan-400 font-extrabold bg-cyan-500/10 px-2 py-1 rounded-lg">-$4,320/yr</span>
         </div>
       </div>
 
