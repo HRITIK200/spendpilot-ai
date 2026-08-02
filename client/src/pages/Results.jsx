@@ -805,6 +805,7 @@ const Results = () => {
           >
             {leadSaved ? "Saved Successfully.. Thank you!" : "Get updates"}
           </button>
+        </div>
       </div>
 
       {/* BOOKING MODAL */}
