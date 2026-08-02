@@ -2,12 +2,14 @@ import express from "express";
 
 import Report from "../models/Report.js";
 import { auditWithGemini } from "../utils/geminiAuditor.js";
+import { validateRequest } from "../middleware/validation.js";
+import { reportSchema } from "../middleware/schemas.js";
 
 const router = express.Router();
 
 // CREATE REPORT
 
-router.post("/", async (req, res) => {
+router.post("/", validateRequest(reportSchema), async (req, res) => {
   try {
     let reportData;
 

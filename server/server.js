@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import rateLimit from "express-rate-limit";
+import helmet from "helmet";
 
 import reportRoutes from "./routes/reportRoutes.js";
 import leadRoutes from "./routes/leadRoutes.js";
@@ -10,6 +11,7 @@ import leadRoutes from "./routes/leadRoutes.js";
 dotenv.config();
 
 const app = express();
+app.use(helmet());
 
 const apiLimiter = rateLimit({
 

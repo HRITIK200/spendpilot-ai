@@ -2,11 +2,13 @@ import express from "express";
 
 import Lead from "../models/Lead.js";
 import { sendLeadEmail } from "../utils/sendEmail.js";
+import { validateRequest } from "../middleware/validation.js";
+import { leadSchema } from "../middleware/schemas.js";
 
 const router = express.Router();
 
 // Save lead
-router.post("/", async (req, res) => {
+router.post("/", validateRequest(leadSchema), async (req, res) => {
 
   try {
 
