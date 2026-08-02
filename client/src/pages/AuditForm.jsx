@@ -242,29 +242,57 @@ const AuditForm = () => {
               <div className="grid md:grid-cols-2 gap-5">
                 
               {/* Tool Selection */}
-                <div>
-                  <label className="block mb-2 text-sm text-gray-300">
-                    AI Tool
+                <div className="md:col-span-2">
+                  <label className="block mb-2 text-sm text-gray-300 font-medium">
+                    Select AI Tool
                   </label>
 
-                  <select
-                    value={tool.tool}
-                    onChange={(e) =>
-                      handleChange(tool.id, "tool", e.target.value)
-                    }
-                    className={`w-full bg-gray-800 border ${
-                      errors[tool.id]?.tool ? "border-red-500 focus:border-red-500" : "border-gray-700 focus:border-blue-500"
-                    } rounded-xl px-4 py-3 outline-none transition`}
-                  >
-                    <option value="">Select AI Tool</option>
-                    {toolData.map((t) => (
-                      <option key={t.tool} value={t.tool}>
-                        {t.tool}
-                      </option>
-                    ))}
-                  </select>
+                  <div className={`grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 bg-gray-950/40 rounded-2xl border ${
+                    errors[tool.id]?.tool ? "border-red-500/50" : "border-gray-800"
+                  }`}>
+                    {toolData.map((t) => {
+                      const isSelected = tool.tool === t.tool;
+                      const brandStyles = {
+                        "ChatGPT": "border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20",
+                        "Claude": "border-orange-500/30 bg-orange-500/10 text-orange-400 hover:bg-orange-500/20",
+                        "Cursor": "border-blue-500/30 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20",
+                        "GitHub Copilot": "border-slate-500/30 bg-slate-500/10 text-slate-200 hover:bg-slate-500/20",
+                        "Gemini": "border-indigo-500/30 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20",
+                        "OpenAI API": "border-teal-500/30 bg-teal-500/10 text-teal-400 hover:bg-teal-500/20",
+                        "Anthropic API": "border-amber-600/30 bg-amber-600/10 text-amber-500 hover:bg-amber-600/20",
+                        "Windsurf": "border-cyan-500/30 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20"
+                      };
+
+                      const activeStyle = brandStyles[t.tool] || "border-blue-500 bg-blue-500/10 text-white";
+
+                      return (
+                        <button
+                          key={t.tool}
+                          type="button"
+                          onClick={() => handleChange(tool.id, "tool", t.tool)}
+                          className={`px-3 py-3 rounded-xl border text-xs font-semibold transition-all duration-200 flex items-center justify-start gap-2.5 ${
+                            isSelected
+                              ? `${activeStyle} border-2 shadow-lg`
+                              : "border-gray-800 bg-gray-800/20 text-gray-400 hover:border-gray-700 hover:text-gray-300"
+                          }`}
+                        >
+                          <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                            t.tool === "ChatGPT" ? "bg-emerald-500" :
+                            t.tool === "Claude" ? "bg-orange-500" :
+                            t.tool === "Cursor" ? "bg-blue-500" :
+                            t.tool === "GitHub Copilot" ? "bg-slate-400" :
+                            t.tool === "Gemini" ? "bg-indigo-500" :
+                            t.tool === "OpenAI API" ? "bg-teal-500" :
+                            t.tool === "Anthropic API" ? "bg-amber-500" :
+                            "bg-cyan-500"
+                          }`} />
+                          {t.tool}
+                        </button>
+                      );
+                    })}
+                  </div>
                   {errors[tool.id]?.tool && (
-                    <p className="text-red-500 text-xs mt-1">{errors[tool.id].tool}</p>
+                    <p className="text-red-500 text-xs mt-2 font-medium">{errors[tool.id].tool}</p>
                   )}
                 </div>
 
@@ -279,9 +307,10 @@ const AuditForm = () => {
                     onChange={(e) =>
                       handleChange(tool.id, "plan", e.target.value)
                     }
+                    disabled={!tool.tool}
                     className={`w-full bg-gray-800 border ${
                       errors[tool.id]?.plan ? "border-red-500 focus:border-red-500" : "border-gray-700 focus:border-blue-500"
-                    } rounded-xl px-4 py-3 outline-none transition`}
+                    } rounded-xl px-4 py-3 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
                     <option value="">Select Plan</option>
                     {toolData
@@ -314,18 +343,18 @@ const AuditForm = () => {
 
                 {/* Seats */}
                 <div>
-                 <label className="block mb-2 text-sm text-gray-300">
+                  <label className="block mb-2 text-sm text-gray-300">
                     Seats/Users
-                 </label>
+                  </label>
 
                   <input
-                   type="number"
-                   placeholder="10"
-                   value={tool.seats}
+                    type="number"
+                    placeholder="10"
+                    value={tool.seats}
                     onChange={(e) =>
                       handleChange(tool.id, "seats", e.target.value)
-                       }
-                     className={`w-full bg-gray-800 border ${
+                    }
+                    className={`w-full bg-gray-800 border ${
                       errors[tool.id]?.seats ? "border-red-500 focus:border-red-500" : "border-gray-700 focus:border-blue-500"
                     } rounded-xl px-4 py-3 outline-none transition`}
                   />
@@ -335,7 +364,7 @@ const AuditForm = () => {
                  </div>
 
                   {/* Use Case */}
-                  <div className="md:col-span-2">
+                  <div>
                     <label className="block mb-2 text-sm text-gray-300">
                        Use Case
                     </label>
@@ -355,11 +384,11 @@ const AuditForm = () => {
                       <option value="writing">Writing/Content Creation</option>
                       <option value="research">Research/Data Analysis</option>
                       <option value="mixed">Mixed/Other</option>
-                      </select>
-                      {errors[tool.id]?.useCase && (
+                    </select>
+                    {errors[tool.id]?.useCase && (
                       <p className="text-red-500 text-xs mt-1">{errors[tool.id].useCase}</p>
                     )}
-                    </div>
+                  </div>
 
               </div>
             </div>
