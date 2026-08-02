@@ -1,22 +1,28 @@
 import express from "express";
 
 import Report from "../models/Report.js";
+import { auditWithGemini } from "../utils/geminiAuditor.js";
 
 const router = express.Router();
 
 // CREATE REPORT
 
 router.post("/", async (req, res) => {
-
   try {
+    let reportData;
 
-    const report =
-      await Report.create(req.body);
+    // Server-side audit generation if raw tools list is supplied
+    if (req.body.tools && Array.isArray(req.body.tools)) {
+      reportData = await auditWithGemini(req.body.tools);
+    } else {
+      // Fallback/backward compatibility for direct saves
+      reportData = req.body;
+    }
 
+    const report = await Report.create(reportData);
     res.status(201).json(report);
-
   } catch (error) {
-
+    console.error("Report creation failed:", error);
     res.status(500).json({
       message: "Failed to create report",
     });

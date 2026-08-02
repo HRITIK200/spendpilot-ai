@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { toolData } from "../data/toolData";
-import { generateAudit } from "../utils/auditEngine";
 import { saveReport } from "../api/reportApi";
 
 
@@ -181,11 +180,8 @@ const AuditForm = () => {
     
     try {
 
-      //generate audit analysis
-      const auditResults = generateAudit(tools);
-
-      //save report to MongoDB
-      const savedReport = await saveReport(auditResults);
+      //save report to MongoDB (server will run the Gemini API optimization engine or fallback rules)
+      const savedReport = await saveReport({ tools });
 
       //save locally for quick access
       localStorage.setItem("auditResults", JSON.stringify(savedReport));
