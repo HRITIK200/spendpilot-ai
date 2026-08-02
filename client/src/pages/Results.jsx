@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { saveLead } from "../api/leadApi";
+import Toast from "../components/Toast";
 
 import { Legend, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
@@ -8,8 +9,13 @@ const Results = () => {
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
   const [leadSaved, setLeadSaved] = useState(false);
+  const [toast, setToast] = useState(null);
 
   const handleLeadSubmit = async () => {
+    if (!email) {
+      setToast({ message: "Please enter your email address", type: "error" });
+      return;
+    }
 
     try {
 
@@ -19,8 +25,10 @@ const Results = () => {
       });
 
       setLeadSaved(true);
+      setToast({ message: "Successfully registered for updates!", type: "success" });
     } catch (error) {
       console.error(error);
+      setToast({ message: "Failed to subscribe. Please try again.", type: "error" });
     }
   };
 
@@ -36,6 +44,17 @@ const Results = () => {
 
 
   const [copied, setCopied] = useState(false);
+
+  const score = results?.optimizationScore || 100;
+  const radius = 35;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (score / 100) * circumference;
+
+  const getScoreColorClass = (val) => {
+    if (val >= 85) return "stroke-emerald-500 text-emerald-400";
+    if (val >= 70) return "stroke-yellow-500 text-yellow-400";
+    return "stroke-rose-500 text-rose-400";
+  };
 
   const chartData = 
   results?.auditedTools.map((tool) => ({
@@ -59,11 +78,70 @@ const Results = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white px-4 md:px-6 py-8 md:py-10">
+    <div className="min-h-screen bg-gray-950 text-white px-4 md:px-6 py-8 md:py-10 print-container">
+      <style dangerouslySetInnerHTML={{__html: `
+        @media print {
+          body {
+            background: white !important;
+            color: black !important;
+          }
+          .no-print, nav, button, input, .fixed, .no-print-section {
+            display: none !important;
+          }
+          .print-container {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 20px !important;
+            background: transparent !important;
+          }
+          .bg-gray-950, .bg-gray-900, .bg-gray-800, .bg-black\/20 {
+            background-color: #f9fafb !important;
+            color: #111827 !important;
+            border: 1px solid #e5e7eb !important;
+          }
+          .text-white, .text-gray-300, .text-gray-400 {
+            color: #1f2937 !important;
+          }
+          .text-green-400, .text-emerald-400 {
+            color: #047857 !important;
+          }
+          .text-blue-400 {
+            color: #1d4ed8 !important;
+          }
+          .text-purple-400 {
+            color: #6d28d9 !important;
+          }
+          .border-white\/10, .border-gray-800, .border-gray-700 {
+            border-color: #e5e7eb !important;
+          }
+          .print-card-break {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+          /* Fix Recharts print overflow */
+          .print-chart-container {
+            width: 100% !important;
+            height: 250px !important;
+          }
+          .recharts-responsive-container {
+            width: 100% !important;
+            height: 250px !important;
+          }
+          .recharts-wrapper {
+            width: 100% !important;
+            height: 250px !important;
+          }
+          svg.recharts-surface {
+            width: 100% !important;
+            height: 250px !important;
+          }
+        }
+      `}} />
       
       
-      <div className="fixed top-0 left-0 w-96 h-96 bg-blue-500/10 blur-[140px] rounded-full pointer-events-none"></div>
-      <div className="fixed bottom-0 right-0 w-96 h-96 bg-purple-500/10 blur-[140px] rounded-full pointer-events-none"></div>
+      <div className="fixed top-0 left-0 w-96 h-96 bg-blue-500/10 blur-[140px] rounded-full pointer-events-none no-print"></div>
+      <div className="fixed bottom-0 right-0 w-96 h-96 bg-purple-500/10 blur-[140px] rounded-full pointer-events-none no-print"></div>
       
       <div className="max-w-7xl mx-auto">
 
@@ -71,7 +149,7 @@ const Results = () => {
 
         <div className="mb-12">
           
-          <div className="flex justify-end">
+          <div className="flex justify-end no-print">
             <button
               onClick={() => window.history.back()}
               className=" bg-gray-800 hover:bg-gray-700 px-5 py-3 rounded-2xl transition"
@@ -131,26 +209,55 @@ const Results = () => {
               Estimated yearly reduction
             </p>
           </div>
-
           {/* Optimization Score */}
 
-          <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border border-purple-500/20 rounded-3xl p-6 md:p-8">
+          <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border border-purple-500/20 rounded-3xl p-6 md:p-8 flex items-center justify-between gap-4">
+            <div>
+              <p className="text-purple-400 mb-3 text-sm uppercase tracking-wide">
+                Optimization Score
+              </p>
 
-            <p className="text-purple-400 mb-3 text-sm uppercase tracking-wide">
-              Optimization Score
-            </p>
+              <h2 className="text-4xl md:text-5xl font-bold mb-2">
+                {score}/100
+              </h2>
 
-            <h2 className="text-4xl md:text-5xl font-bold mb-2">
-              {results.optimizationScore}/100
-            </h2>
-
-            <p className="text-gray-400">
-              AI infrastructure efficiency
-            </p>
+              <p className="text-gray-400">
+                AI infrastructure efficiency
+              </p>
+            </div>
+            
+            <div className="relative w-20 h-20 flex-shrink-0">
+              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 80 80">
+                {/* Background Circle */}
+                <circle
+                  cx="40"
+                  cy="40"
+                  r={radius}
+                  className="stroke-gray-800"
+                  strokeWidth="6"
+                  fill="transparent"
+                />
+                {/* Animated Foreground Circle */}
+                <circle
+                  cx="40"
+                  cy="40"
+                  r={radius}
+                  className={`transition-all duration-1000 ease-out ${getScoreColorClass(score)}`}
+                  strokeWidth="6"
+                  fill="transparent"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={strokeDashoffset}
+                  strokeLinecap="round"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center text-sm font-extrabold text-white print:text-black">
+                {score}%
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-4 mb-12">
+        <div className="flex flex-wrap gap-4 mb-12 no-print">
 
           <button 
               onClick={() => {
@@ -159,11 +266,19 @@ const Results = () => {
                 );
 
                 setCopied(true);
+                setToast({ message: "Public report link copied to clipboard!", type: "success" });
                 setTimeout(() => { setCopied(false); }, 2000);
               }}
-              className="bg-blue-500 hover:bg-blue-600 px-5 py-3 rounded-2xl transition transition transition-all duration-300"
+              className="bg-blue-500 hover:bg-blue-600 px-5 py-3 rounded-2xl transition-all duration-300"
           >
             {copied? "Link Copied!" : "Copy Public Report Link"}
+          </button>
+          
+          <button
+            onClick={() => window.print()}
+            className="bg-purple-600 hover:bg-purple-700 px-5 py-3 rounded-2xl transition-all duration-300 font-semibold"
+          >
+            Download PDF Report
           </button>
           </div>
         
@@ -179,7 +294,7 @@ const Results = () => {
             </p>
           </div>
 
-          <div className="h-[300px] md:h-[400px]">
+          <div className="h-[300px] md:h-[400px] print-chart-container">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
                 <XAxis dataKey="name" />
@@ -229,7 +344,7 @@ const Results = () => {
 
         {results.totalMonthlySavings >= 500 && (
 
-          <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/10 border border-green-500/20 rounded-3xl p-8 mb-12">
+          <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/10 border border-green-500/20 rounded-3xl p-8 mb-12 no-print">
 
             <h2 className="text-3xl font-bold mb-4">
               Significant Savings Opportunity Detected
@@ -435,7 +550,7 @@ const Results = () => {
 
         {/* EMAIL CAPTURE SECTION */}
 
-         <div className="mt-12 bg-gray-900 border border-gray-800 rounded-3xl p-6 md:p-8">
+         <div className="mt-12 bg-gray-900 border border-gray-800 rounded-3xl p-6 md:p-8 no-print">
 
           <h2 className="text-3xl font-bold mb-3">
             Get Audit Updates
@@ -473,6 +588,13 @@ const Results = () => {
           </button>
         </div>
       </div>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 };
