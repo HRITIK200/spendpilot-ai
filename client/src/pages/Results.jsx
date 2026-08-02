@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { saveLead } from "../api/leadApi";
 import Toast from "../components/Toast";
 
-import { Legend, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { Legend, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 const Results = () => {
 
@@ -67,6 +67,23 @@ const Results = () => {
          Number(tool.monthlySavings),
     })) || [];
 
+  const donutData = 
+  results?.auditedTools.map((tool) => ({
+      name: tool.tool,
+      value: Number(tool.monthlyCost),
+    })) || [];
+
+  const DONUT_COLORS = [
+    "#3b82f6", // Blue
+    "#10b981", // Emerald
+    "#8b5cf6", // Purple
+    "#ec4899", // Pink
+    "#f59e0b", // Amber
+    "#06b6d4", // Cyan
+    "#f43f5e", // Rose
+    "#14b8a6", // Teal
+  ];
+
   if (!results) {
     return (
       <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
@@ -119,22 +136,20 @@ const Results = () => {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
           }
-          /* Fix Recharts print overflow */
-          .print-chart-container {
-            width: 100% !important;
-            height: 250px !important;
+          /* Stack charts vertically on print so they have full page width and do not overflow */
+          .print-charts-grid {
+            display: block !important;
           }
-          .recharts-responsive-container {
+          .print-charts-grid > div {
+            margin-bottom: 30px !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
             width: 100% !important;
-            height: 250px !important;
+            max-width: 100% !important;
           }
+          /* Allow Recharts SVGs to print at their calculated container sizes */
           .recharts-wrapper {
-            width: 100% !important;
-            height: 250px !important;
-          }
-          svg.recharts-surface {
-            width: 100% !important;
-            height: 250px !important;
+            margin: 0 auto !important;
           }
         }
       `}} />
@@ -282,46 +297,89 @@ const Results = () => {
           </button>
           </div>
         
-        {/* SPEND COMPARISON CHART */}
-        <div className="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-12">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold mb-2">
-              AI Spend Comparison
-            </h2>
+        {/* CHARTS CONTAINER GRID */}
+        <div className="grid md:grid-cols-2 gap-8 mb-12 print-charts-grid">
+          {/* Spend Comparison Bar Chart */}
+          <div className="bg-gray-900 border border-gray-800 rounded-3xl p-6 print-card-break">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold mb-1">
+                AI Spend Comparison
+              </h2>
+              <p className="text-gray-400 text-sm">
+                Current monthly spend vs. optimized recommendations.
+              </p>
+            </div>
 
-            <p className="text-gray-400 text-lg">
-              Current monthly spend vs. optimized recommendations.
-            </p>
+            <div className="h-[280px] print-chart-container">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData}>
+                  <XAxis dataKey="name" tick={{ fill: "#9ca3af", fontSize: 10 }} />
+                  <YAxis tick={{ fill: "#9ca3af", fontSize: 10 }} />
+                  <Tooltip  
+                    contentStyle={{
+                       backgroundColor: "#111827",
+                       border: "1px solid #374151",
+                       borderRadius: "12px",
+                       color: "#fff",
+                      }}
+                  /> 
+                  <Legend wrapperStyle={{ fontSize: 11 }} /> 
+                  
+                  <Bar
+                     dataKey="Current"
+                     fill="#3b82f6"
+                     radius={[4, 4, 0, 0]}
+                  />
+                  <Bar
+                    dataKey="Optimized"
+                    fill="#10b981"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
 
-          <div className="h-[300px] md:h-[400px] print-chart-container">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip  
-                  contentStyle={{
-                     backgroundColor: "#111827",
-                     border: "1px solid #374151",
-                     borderRadius: "12px",
-                     color: "#fff",
+          {/* Spend Allocation Donut Chart */}
+          <div className="bg-gray-900 border border-gray-800 rounded-3xl p-6 print-card-break">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold mb-1">
+                Spend Allocation
+              </h2>
+              <p className="text-gray-400 text-sm">
+                Current monthly budget distribution by tool.
+              </p>
+            </div>
+
+            <div className="h-[280px] print-chart-container">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={donutData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={4}
+                    dataKey="value"
+                  >
+                    {donutData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={DONUT_COLORS[index % DONUT_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value) => [`$${value}`, "Monthly Spend"]}
+                    contentStyle={{
+                      backgroundColor: "#111827",
+                      border: "1px solid #374151",
+                      borderRadius: "12px",
+                      color: "#fff",
                     }}
-                /> 
-                <Legend /> 
-                
-                <Bar
-                   dataKey="Current"
-                   fill="#3b82f6"
-                   radius={[8, 8, 0, 0]}
-                />
-                <Bar
-                  dataKey="Optimized"
-                  fill="#22c55e"
-                  radius={[8, 8, 0, 0]}
-                />
-         
-              </BarChart>
-            </ResponsiveContainer>
+                  />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
         
