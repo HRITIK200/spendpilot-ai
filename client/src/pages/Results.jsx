@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { saveLead } from "../api/leadApi";
 import Toast from "../components/Toast";
 
@@ -84,6 +86,53 @@ const Results = () => {
     "#14b8a6", // Teal
   ];
 
+  const totalCurrentSpend = results?.auditedTools.reduce((acc, t) => acc + Number(t.monthlyCost), 0) || 1;
+
+  const topSavingsTool = results?.auditedTools.reduce((max, tool) => {
+    return Number(tool.monthlySavings) > Number(max.monthlySavings) ? tool : max;
+  }, { monthlySavings: 0 });
+
+  const CustomDonutTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      const percentage = ((data.value / totalCurrentSpend) * 100).toFixed(1);
+      return (
+        <div className="bg-gray-950/90 border border-gray-800 backdrop-blur-md rounded-2xl p-4 shadow-2xl no-print">
+          <p className="font-semibold text-white mb-1.5 text-sm">{data.name}</p>
+          <div className="flex items-center gap-2 text-xs">
+            <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: payload[0].payload.fill || payload[0].color }} />
+            <span className="text-gray-400">Monthly Spend:</span>
+            <span className="font-bold text-gray-100">${data.value}</span>
+          </div>
+          <div className="mt-1.5 pt-1.5 border-t border-gray-800/60 text-xs text-blue-400 font-semibold">
+            {percentage}% of AI Budget
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-gray-950/90 border border-gray-800 backdrop-blur-md rounded-2xl p-4 shadow-2xl no-print">
+          <p className="font-semibold text-white mb-2 text-sm">{label}</p>
+          <div className="space-y-1.5">
+            {payload.map((pld, index) => (
+              <div key={index} className="flex items-center gap-2 text-xs">
+                <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: pld.fill || pld.color }} />
+                <span className="text-gray-400">{pld.name}:</span>
+                <span className="font-bold text-gray-100">${pld.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
   if (!results) {
     return (
       <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
@@ -164,13 +213,14 @@ const Results = () => {
 
         <div className="mb-12">
           
-          <div className="flex justify-end no-print">
-            <button
-              onClick={() => window.history.back()}
-              className=" bg-gray-800 hover:bg-gray-700 px-5 py-3 rounded-2xl transition"
-               >
-               ← Back To Audit
-             </button>
+          <div className="mb-6 no-print">
+            <Link
+              to="/audit"
+              className="inline-flex items-center gap-2 bg-gray-900/60 hover:bg-gray-800 border border-gray-800 hover:border-gray-700 text-gray-300 hover:text-white px-4 py-2.5 rounded-xl transition duration-200 text-sm font-semibold shadow-lg"
+            >
+              <ArrowLeft size={16} />
+              Back To Audit
+            </Link>
           </div>
           <div className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/20 text-green-400 px-4 py-2 rounded-full mb-6">
             AI Spend Optimization Complete
@@ -296,6 +346,35 @@ const Results = () => {
             Download PDF Report
           </button>
           </div>
+
+        {/* TOP SAVINGS INSIGHT OR FULLY OPTIMIZED BANNER */}
+        {topSavingsTool && Number(topSavingsTool.monthlySavings) > 0 ? (
+          <div className="bg-emerald-950/20 border border-emerald-500/30 rounded-3xl p-6 mb-12 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-xl print-card-break relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-transparent pointer-events-none"></div>
+            <div className="p-3.5 bg-emerald-500/10 rounded-2xl text-emerald-400 font-extrabold flex-shrink-0 animate-pulse text-xl">
+              💡
+            </div>
+            <div>
+              <h3 className="text-emerald-400 font-bold text-lg mb-0.5">Top Cost Optimization Opportunity</h3>
+              <p className="text-gray-300 text-sm leading-relaxed">
+                You can save the most on <span className="text-white font-semibold underline decoration-emerald-400 decoration-2">{topSavingsTool.tool}</span> by switching to the recommended plan, reducing spend by <span className="text-emerald-400 font-bold">${topSavingsTool.monthlySavings}/month</span> (${Number(topSavingsTool.monthlySavings) * 12}/year).
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-blue-950/20 border border-blue-500/30 rounded-3xl p-6 mb-12 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-xl print-card-break relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-transparent pointer-events-none"></div>
+            <div className="p-3.5 bg-blue-500/10 rounded-2xl text-blue-400 font-extrabold flex-shrink-0 text-xl">
+              🎉
+            </div>
+            <div>
+              <h3 className="text-blue-400 font-bold text-lg mb-0.5">Infrastructure Fully Optimized</h3>
+              <p className="text-gray-300 text-sm leading-relaxed">
+                Awesome! We didn't find any overprovisioning or cost overlaps in your current stack. Your organization is operating at maximum AI infrastructure efficiency.
+              </p>
+            </div>
+          </div>
+        )}
         
         {/* CHARTS CONTAINER GRID */}
         <div className="grid md:grid-cols-2 gap-8 mb-12 print-charts-grid">
@@ -315,14 +394,7 @@ const Results = () => {
                 <BarChart data={chartData}>
                   <XAxis dataKey="name" tick={{ fill: "#9ca3af", fontSize: 10 }} />
                   <YAxis tick={{ fill: "#9ca3af", fontSize: 10 }} />
-                  <Tooltip  
-                    contentStyle={{
-                       backgroundColor: "#111827",
-                       border: "1px solid #374151",
-                       borderRadius: "12px",
-                       color: "#fff",
-                      }}
-                  /> 
+                  <Tooltip content={<CustomTooltip />} /> 
                   <Legend wrapperStyle={{ fontSize: 11 }} /> 
                   
                   <Bar
@@ -367,15 +439,7 @@ const Results = () => {
                       <Cell key={`cell-${index}`} fill={DONUT_COLORS[index % DONUT_COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip
-                    formatter={(value) => [`$${value}`, "Monthly Spend"]}
-                    contentStyle={{
-                      backgroundColor: "#111827",
-                      border: "1px solid #374151",
-                      borderRadius: "12px",
-                      color: "#fff",
-                    }}
-                  />
+                  <Tooltip content={<CustomDonutTooltip />} />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
                 </PieChart>
               </ResponsiveContainer>

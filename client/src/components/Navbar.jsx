@@ -10,11 +10,11 @@ function Navbar() {
         </Link>
 
         <div className="flex items-center gap-6">
-          <a href="#features" className="text-gray-300 hover:text-white transition">
+          <a href="/#features" className="text-gray-300 hover:text-white transition">
             Features
           </a>
 
-          <a href="#faq" className="text-gray-300 hover:text-white transition">
+          <a href="/#faq" className="text-gray-300 hover:text-white transition">
             FAQ
           </a>
 
