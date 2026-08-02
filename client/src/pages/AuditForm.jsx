@@ -266,7 +266,7 @@ const AuditForm = () => {
                           key={t.tool}
                           type="button"
                           onClick={() => handleChange(tool.id, "tool", t.tool)}
-                          className={`px-3 py-3 rounded-xl border text-xs font-semibold transition-all duration-200 flex items-center justify-start gap-2.5 ${
+                          className={`px-3 py-3 rounded-xl border text-xs font-semibold transition-all duration-200 flex items-center justify-start gap-2.5 hover:scale-[1.02] active:scale-[0.98] ${
                             isSelected
                               ? `${activeStyle} border-2 shadow-lg`
                               : "border-gray-800 bg-gray-800/20 text-gray-400 hover:border-gray-700 hover:text-gray-300"
@@ -305,7 +305,9 @@ const AuditForm = () => {
                     }
                     disabled={!tool.tool}
                     className={`w-full bg-gray-800 border ${
-                      errors[tool.id]?.plan ? "border-red-500 focus:border-red-500" : "border-gray-700 focus:border-blue-500"
+                      errors[tool.id]?.plan 
+                        ? "border-red-500/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20" 
+                        : "border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                     } rounded-xl px-4 py-3 outline-none transition disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
                     <option value="">Select Plan</option>
@@ -333,7 +335,7 @@ const AuditForm = () => {
                     placeholder="20"
                     value={tool.monthlyCost}
                     readOnly
-                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-blue-500 cursor-not-allowed text-gray-400"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 outline-none cursor-not-allowed text-gray-400"
                   />
                  </div> 
 
@@ -351,7 +353,9 @@ const AuditForm = () => {
                       handleChange(tool.id, "seats", e.target.value)
                     }
                     className={`w-full bg-gray-800 border ${
-                      errors[tool.id]?.seats ? "border-red-500 focus:border-red-500" : "border-gray-700 focus:border-blue-500"
+                      errors[tool.id]?.seats 
+                        ? "border-red-500/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20" 
+                        : "border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                     } rounded-xl px-4 py-3 outline-none transition`}
                   />
                   {errors[tool.id]?.seats && (
@@ -371,7 +375,9 @@ const AuditForm = () => {
                         handleChange(tool.id, "useCase", e.target.value)
                       }
                       className={`w-full bg-gray-800 border ${
-                        errors[tool.id]?.useCase ? "border-red-500 focus:border-red-500" : "border-gray-700 focus:border-blue-500"
+                        errors[tool.id]?.useCase 
+                          ? "border-red-500/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20" 
+                          : "border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                       } rounded-xl px-4 py-3 outline-none transition`}
                     >
                       <option value="">Select Use Case</option>

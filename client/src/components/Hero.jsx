@@ -11,8 +11,73 @@ function Hero() {
   const annualSavings = monthlySavings * 12;
 
   return (
-    <section className="min-h-screen flex items-center justify-center px-6 py-20">
-      <div className="max-w-5xl mx-auto text-center">
+    <section className="min-h-screen flex items-center justify-center px-6 py-20 relative overflow-hidden">
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes float-up-down {
+          0%, 100% {
+            transform: translateY(0) rotate(-6deg);
+          }
+          50% {
+            transform: translateY(-15px) rotate(-8deg);
+          }
+        }
+        @keyframes float-down-up {
+          0%, 100% {
+            transform: translateY(0) rotate(3deg);
+          }
+          50% {
+            transform: translateY(12px) rotate(1deg);
+          }
+        }
+        @keyframes float-middle {
+          0%, 100% {
+            transform: translateY(0) rotate(-3deg);
+          }
+          50% {
+            transform: translateY(-8px) rotate(-1deg);
+          }
+        }
+        .animate-float-slow {
+          animation: float-up-down 6s ease-in-out infinite;
+        }
+        .animate-float {
+          animation: float-down-up 5s ease-in-out infinite;
+        }
+        .animate-float-medium {
+          animation: float-middle 4s ease-in-out infinite;
+        }
+      `}} />
+
+      {/* Background radial glows */}
+      <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-blue-500/5 blur-[120px] rounded-full pointer-events-none"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-emerald-500/5 blur-[120px] rounded-full pointer-events-none"></div>
+
+      {/* Floating Elements (Visual Polish) */}
+      <div className="hidden lg:block absolute top-[25%] left-[10%] animate-float-slow bg-gray-900/60 backdrop-blur-md border border-white/10 px-4 py-2.5 rounded-2xl shadow-2xl pointer-events-none transform -rotate-6">
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span className="text-xs font-semibold text-gray-200">ChatGPT: Downgraded to Plus</span>
+          <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded-md">Save $20/mo</span>
+        </div>
+      </div>
+
+      <div className="hidden lg:block absolute bottom-[30%] right-[8%] animate-float bg-gray-900/60 backdrop-blur-md border border-white/10 px-4 py-2.5 rounded-2xl shadow-2xl pointer-events-none transform rotate-3">
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse"></span>
+          <span className="text-xs font-semibold text-gray-200">Windsurf: 12 redundant seats</span>
+          <span className="text-[10px] text-cyan-400 font-bold bg-cyan-500/10 px-1.5 py-0.5 rounded-md">-$360/mo</span>
+        </div>
+      </div>
+
+      <div className="hidden lg:block absolute top-[40%] right-[12%] animate-float-medium bg-gray-900/60 backdrop-blur-md border border-white/10 px-4 py-2.5 rounded-2xl shadow-2xl pointer-events-none transform -rotate-3">
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-pulse"></span>
+          <span className="text-xs font-semibold text-gray-200">Claude: Team tier right-sized</span>
+          <span className="text-[10px] text-orange-400 font-bold bg-orange-500/10 px-1.5 py-0.5 rounded-md">100% Optimized</span>
+        </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto text-center relative z-10">
 
         <div className="inline-flex items-center gap-2 border border-white/10 bg-white/5 rounded-full px-4 py-2 mb-6">
           <span className="text-sm text-gray-300">
