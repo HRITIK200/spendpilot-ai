@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, X, FileSpreadsheet } from "lucide-react";
+import { ArrowLeft, X, FileSpreadsheet, AlertTriangle, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import { saveLead } from "../api/leadApi";
 import Toast from "../components/Toast";
 
@@ -43,6 +43,81 @@ const Results = () => {
     const savedResults = localStorage.getItem("auditResults");
     return savedResults ? JSON.parse(savedResults) : null;
   });
+
+  const [compareToolId, setCompareToolId] = useState(null);
+
+  const getRedundancyAlerts = () => {
+    if (!results || !results.auditedTools) return [];
+    const alerts = [];
+    const toolsList = results.auditedTools.map((t) => t.tool);
+
+    // 1. Developer Tooling Overlap
+    const codingTools = ["Cursor", "GitHub Copilot", "Windsurf"].filter((t) => toolsList.includes(t));
+    if (codingTools.length >= 2) {
+      const seats = results.auditedTools.find((t) => t.tool === codingTools[0])?.seats || 1;
+      const savings = seats * 10;
+      alerts.push({
+        type: "developer",
+        title: "Developer Tooling Overlap Detected",
+        description: `We detected both ${codingTools.join(" and ")} configured. Consolidating your developer tooling onto Cursor can save an additional $${savings}/mo by eliminating duplicate subscriptions.`,
+        savings,
+      });
+    }
+
+    // 2. Chatbot Tooling Overlap
+    const chatTools = ["ChatGPT", "Claude"].filter((t) => toolsList.includes(t));
+    const hasWritingCase = results.auditedTools.some((t) => chatTools.includes(t.tool) && t.useCase === "writing");
+    if (chatTools.length >= 2 && hasWritingCase) {
+      const seats = results.auditedTools.find((t) => t.tool === "ChatGPT")?.seats || 1;
+      const savings = seats * 20;
+      alerts.push({
+        type: "chatbot",
+        title: "Chat Workspace Redundancy",
+        description: `Both ChatGPT and Claude are active for content writing workflows. Standardizing on a single chatbot platform can reduce overlapping licensing costs by $${savings}/mo.`,
+        savings,
+      });
+    }
+
+    return alerts;
+  };
+  const redundancyAlerts = getRedundancyAlerts();
+
+  const PLAN_FEATURES_MATRIX = {
+    "ChatGPT": {
+      "Team": {
+        kept: ["Access to GPT-4o & GPT-4o-mini", "Create & share custom GPTs", "Advanced Data Analysis", "Higher message limits than Plus"],
+        removed: ["Admin workspace controls & billing - Not required for small teams", "Shared GPT store workspace namespace"]
+      },
+      "Enterprise": {
+        kept: ["Access to GPT-4o & GPT-4o-mini", "Create custom GPTs", "Advanced Data Analysis"],
+        removed: ["Single Sign-on (SSO)", "Expanded admin roles & control parameters", "Custom data retention policies"]
+      }
+    },
+    "Claude": {
+      "Team": {
+        kept: ["Access to Claude 3.5 Sonnet", "Projects workspace tools", "Sharing prompts"],
+        removed: ["Team administration console - Not required for small teams", "Domain management tools"]
+      }
+    },
+    "Cursor": {
+      "Business": {
+        kept: ["Unlimited slow requests", "500 fast requests/mo", "Copilot++ autocomplete"],
+        removed: ["Admin usage statistics - Not needed for small teams", "SSO/SAML integration"]
+      }
+    },
+    "GitHub Copilot": {
+      "Business": {
+        kept: ["Code completion autocomplete", "Copilot Chat features"],
+        removed: ["Organization policy controls", "User management tools"]
+      }
+    },
+    "Gemini": {
+      "Team": {
+        kept: ["Access to Gemini 1.5 Pro & Ultra", "Integration with Workspace Docs & Slides"],
+        removed: ["Admin controls & reports", "Enterprise-grade data security protocols"]
+      }
+    }
+  };
 
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -647,6 +722,30 @@ const Results = () => {
         </div>
         </div>
 
+        {/* REDUNDANCY OVERLAP ALERTS */}
+        {redundancyAlerts.length > 0 && (
+          <div className="space-y-4 mb-12 no-print">
+            <h3 className="text-xl font-bold text-rose-400 flex items-center gap-2">
+              <AlertTriangle className="text-rose-500 animate-pulse" size={20} />
+              SaaS Stack Redundancy Warnings
+            </h3>
+            <div className="grid gap-4">
+              {redundancyAlerts.map((alert, idx) => (
+                <div key={idx} className="bg-rose-950/10 border border-rose-500/20 p-5 rounded-3xl relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl">
+                  <div className="absolute inset-0 bg-gradient-to-r from-rose-500/5 to-transparent pointer-events-none"></div>
+                  <div>
+                    <h4 className="text-rose-455 font-bold text-sm mb-1">{alert.title}</h4>
+                    <p className="text-gray-300 text-xs leading-relaxed max-w-2xl">{alert.description}</p>
+                  </div>
+                  <div className="flex-shrink-0 text-left md:text-right bg-rose-500/10 border border-rose-500/20 px-4 py-2.5 rounded-2xl">
+                    <p className="text-[9px] text-rose-300 font-semibold uppercase tracking-wider">Consolidation Savings</p>
+                    <p className="text-lg font-black text-rose-400">${alert.savings}/mo</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* TOOL BREAKDOWN */}
 
@@ -763,6 +862,57 @@ const Results = () => {
                   {tool.reasoning}
                 </p>
               </div>
+
+              {/* PLAN COMPARISON WIDGET TRIGGER */}
+              {PLAN_FEATURES_MATRIX[tool.tool]?.[tool.plan] && (
+                <div className="mt-6 no-print">
+                  <button
+                    onClick={() => setCompareToolId(compareToolId === tool.tool ? null : tool.tool)}
+                    className="border border-blue-500/30 text-blue-400 hover:bg-blue-500/10 px-5 py-3 rounded-2xl text-xs font-semibold transition flex items-center gap-2"
+                  >
+                    <span>{compareToolId === tool.tool ? "Hide Feature Checklists" : "Compare Plan Features"}</span>
+                    <ArrowRight size={14} className={`transform transition-transform ${compareToolId === tool.tool ? "rotate-90" : ""}`} />
+                  </button>
+
+                  {compareToolId === tool.tool && (
+                    <div className="mt-4 p-6 bg-gray-950/60 rounded-3xl border border-gray-800 animate-toast-in">
+                      <h4 className="text-xs uppercase tracking-wider text-gray-400 font-bold mb-4">SaaS Features Mapping ({tool.plan} Plan)</h4>
+                      <div className="grid md:grid-cols-2 gap-6">
+                        {/* KEPT */}
+                        <div>
+                          <h5 className="text-xs font-bold text-emerald-400 mb-3 flex items-center gap-1.5">
+                            <CheckCircle2 size={14} />
+                            Features Retained
+                          </h5>
+                          <ul className="space-y-2">
+                            {PLAN_FEATURES_MATRIX[tool.tool][tool.plan].kept.map((f, i) => (
+                              <li key={i} className="text-gray-300 text-xs leading-relaxed flex items-start gap-2">
+                                <span className="text-emerald-500 mt-1">•</span>
+                                <span>{f}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        {/* RIGHT SIZED */}
+                        <div>
+                          <h5 className="text-xs font-bold text-gray-400 mb-3 flex items-center gap-1.5">
+                            <XCircle size={14} className="text-rose-500/70" />
+                            Omitted / Right-Sized
+                          </h5>
+                          <ul className="space-y-2">
+                            {PLAN_FEATURES_MATRIX[tool.tool][tool.plan].removed.map((f, i) => (
+                              <li key={i} className="text-gray-400 text-xs leading-relaxed flex items-start gap-2">
+                                <span className="text-rose-500/70 mt-1">•</span>
+                                <span>{f}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>
