@@ -412,7 +412,7 @@ const Results = () => {
 
         {/* HERO STATS */}
 
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
 
           {/* Monthly Savings */}
 
@@ -495,7 +495,7 @@ const Results = () => {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-4 mb-12 no-print">
+        <div className="flex flex-col sm:flex-row flex-wrap gap-4 mb-12 no-print">
           <button 
               onClick={() => {
                 navigator.clipboard.writeText(
@@ -506,21 +506,21 @@ const Results = () => {
                 setToast({ message: "Public report link copied to clipboard!", type: "success" });
                 setTimeout(() => { setCopied(false); }, 2000);
               }}
-              className="bg-blue-500 hover:bg-blue-600 px-5 py-3 rounded-2xl transition-all duration-300 text-sm font-semibold shadow-lg"
+              className="flex-1 sm:flex-none text-center bg-blue-500 hover:bg-blue-600 px-5 py-3 rounded-2xl transition-all duration-300 text-sm font-semibold shadow-lg"
           >
             {copied? "Link Copied!" : "Copy Public Report Link"}
           </button>
           
           <button
             onClick={() => window.print()}
-            className="bg-purple-600 hover:bg-purple-700 px-5 py-3 rounded-2xl transition-all duration-300 font-semibold text-sm shadow-lg"
+            className="flex-1 sm:flex-none text-center bg-purple-600 hover:bg-purple-700 px-5 py-3 rounded-2xl transition-all duration-300 font-semibold text-sm shadow-lg"
           >
             Download PDF Report
           </button>
 
           <button
             onClick={handleExportCSV}
-            className="bg-emerald-600 hover:bg-emerald-700 px-5 py-3 rounded-2xl transition-all duration-300 font-semibold text-sm shadow-lg flex items-center gap-2"
+            className="flex-1 sm:flex-none text-center justify-center bg-emerald-600 hover:bg-emerald-700 px-5 py-3 rounded-2xl transition-all duration-300 font-semibold text-sm shadow-lg flex items-center gap-2"
           >
             <FileSpreadsheet size={16} />
             Export CSV
