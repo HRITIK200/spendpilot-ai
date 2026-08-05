@@ -3,24 +3,29 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 export const generateFallbackAudit = (tools) => {
   let totalMonthlySavings = 0;
 
-  const auditedTools = tools.map((tool) => {
+  const auditedTools = tools.map((t) => {
+    const seats = Number(t.seats) || 1;
+    // Scale monthlyCost to represent the total monthly spend: unit cost * seats
+    const totalCost = Number(t.monthlyCost) * seats;
+    const tool = { ...t, monthlyCost: totalCost };
+
     let recommendation = "Current plan looks optimized.";
     let savings = 0;
     let optimizedPlan = tool.plan;
     let reasoning = "Your current setup appears cost-efficient.";
 
     // Rule 1: Small teams using Team plans
-    if (tool.plan === "Team" && Number(tool.seats) <= 2) {
+    if (tool.plan === "Team" && seats <= 2) {
       optimizedPlan = "Plus";
-      savings = 10 * Number(tool.seats);
+      savings = 10 * seats;
       recommendation = "Downgrade to Plus plan";
       reasoning = "Small teams of 2 or fewer seats typically do not require collaboration-focused Team plans.";
     }
 
     // Rule 2: Enterprise overkill
-    if (tool.plan === "Enterprise" && Number(tool.seats) < 10) {
+    if (tool.plan === "Enterprise" && seats < 10) {
       optimizedPlan = "Business";
-      savings = 20 * Number(tool.seats);
+      savings = 20 * seats;
       recommendation = "Business plan may be more cost-efficient";
       reasoning = "Enterprise pricing tiers are usually better suited for larger organizations.";
     }
@@ -53,13 +58,19 @@ export const generateFallbackAudit = (tools) => {
   };
 };
 
-export const auditWithGemini = async (tools) => {
+export const auditWithGemini = async (rawTools) => {
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
     console.warn("GEMINI_API_KEY is not defined. Falling back to rule-based heuristics.");
-    return generateFallbackAudit(tools);
+    return generateFallbackAudit(rawTools);
   }
+
+  // Pre-calculate total monthly cost on backend side for clean mapping
+  const tools = rawTools.map((t) => ({
+    ...t,
+    monthlyCost: Number(t.monthlyCost) * (Number(t.seats) || 1)
+  }));
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
@@ -81,7 +92,7 @@ export const auditWithGemini = async (tools) => {
       2. If a plan is already optimized, keep it as is, setting monthlySavings to 0, optimizedPlan to the current plan, recommendation to "Current plan looks optimized.", and reasoning to "Your current setup appears cost-efficient."
       3. For each tool object, compute:
          - optimizedPlan: The recommended plan string.
-         - monthlySavings: Monthly cost savings in USD.
+         - monthlySavings: Total monthly cost savings in USD (savings per seat * seats).
          - annualSavings: monthlySavings * 12.
          - recommendation: Direct recommendation description.
          - reasoning: Explanatory rationale.

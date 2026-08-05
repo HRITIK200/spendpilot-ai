@@ -364,6 +364,16 @@ const Results = () => {
             margin: 0 auto !important;
           }
         }
+        /* Screen display overrides to prevent default browser outlines on SVGs and Recharts wrappers */
+        svg, 
+        .recharts-wrapper, 
+        .recharts-surface, 
+        .recharts-legend-wrapper, 
+        .recharts-default-legend {
+          outline: none !important;
+          border: none !important;
+          box-shadow: none !important;
+        }
       `}} />
       
       
@@ -547,7 +557,7 @@ const Results = () => {
         )}
         
         {/* CHARTS CONTAINER GRID */}
-        <div className="grid md:grid-cols-2 gap-8 mb-12 print-charts-grid">
+        <div className="grid lg:grid-cols-2 gap-8 mb-12 print-charts-grid">
           {/* Spend Comparison Bar Chart */}
           <div className="bg-gray-900 border border-gray-800 rounded-3xl p-6 print-card-break">
             <div className="mb-6">
@@ -599,7 +609,7 @@ const Results = () => {
                   <Pie
                     data={donutData}
                     cx="50%"
-                    cy="50%"
+                    cy="45%"
                     innerRadius={60}
                     outerRadius={80}
                     paddingAngle={4}
@@ -610,7 +620,7 @@ const Results = () => {
                     ))}
                   </Pie>
                   <Tooltip content={<CustomDonutTooltip />} />
-                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                  <Legend verticalAlign="bottom" height={36} wrapperStyle={{ fontSize: 11 }} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
