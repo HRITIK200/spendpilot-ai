@@ -7,7 +7,7 @@ import PublicReport from "./pages/PublicReport";
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
+      <Routes> 
         <Route path="/" element={<Home />} />
         <Route path="/audit" element={<AuditForm />} />
         <Route path="/results" element={<Results />} />

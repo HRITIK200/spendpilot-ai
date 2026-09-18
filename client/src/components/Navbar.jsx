@@ -16,32 +16,32 @@ function Navbar() {
   return (
     <>
       <nav className="w-full border-b border-white/10 backdrop-blur-md sticky top-0 z-50 bg-[#030712]/80 no-print">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between">
           
-          <Link to="/" className="text-2xl font-bold">
+          <Link to="/" className="text-lg sm:text-2xl font-bold tracking-tight">
             SpendPilot AI
           </Link>
 
-          <div className="flex items-center gap-6">
-            <a href="/#features" className="text-gray-300 hover:text-white transition">
+          <div className="flex items-center gap-2.5 sm:gap-6">
+            <a href="/#features" className="hidden sm:inline-block text-gray-300 hover:text-white text-sm md:text-base transition">
               Features
             </a>
 
-            <a href="/#faq" className="text-gray-300 hover:text-white transition">
+            <a href="/#faq" className="hidden sm:inline-block text-gray-300 hover:text-white text-sm md:text-base transition">
               FAQ
             </a>
 
             <button 
               onClick={() => setIsDrawerOpen(true)}
-              className="text-gray-300 hover:text-white transition flex items-center gap-1.5 text-sm md:text-base focus:outline-none"
+              className="text-gray-300 hover:text-white transition flex items-center gap-1 text-xs sm:text-sm md:text-base focus:outline-none px-2 py-1 rounded-lg hover:bg-white/5"
             >
-              <Clock size={16} />
-              History
+              <Clock size={15} />
+              <span>History</span>
             </button>
 
             <Link
               to="/audit"
-              className="bg-white text-black px-5 py-2 rounded-xl font-medium hover:scale-105 transition"
+              className="bg-white text-black px-3 sm:px-5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold hover:scale-105 transition"
             >
               Start Audit
             </Link>
@@ -59,7 +59,7 @@ function Navbar() {
 
       {/* SIDE DRAWER */}
       <div 
-        className={`fixed inset-y-0 right-0 w-80 bg-gray-950 border-l border-gray-900 z-50 p-6 shadow-2xl transition-transform duration-300 transform no-print ${
+        className={`fixed inset-y-0 right-0 w-full sm:w-80 max-w-[90vw] bg-gray-950 border-l border-gray-900 z-50 p-5 sm:p-6 shadow-2xl transition-transform duration-300 transform no-print ${
           isDrawerOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >

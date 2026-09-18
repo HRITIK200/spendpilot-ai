@@ -22,26 +22,26 @@ function Features() {
   return (
     <section
       id="features"
-      className="py-32 px-6"
+      className="py-16 sm:py-28 px-4 sm:px-6"
     >
       <div className="max-w-7xl mx-auto">
 
-        <div className="text-center mb-20">
-          <h2 className="text-5xl font-bold">
+        <div className="text-center mb-14 sm:mb-20">
+          <h2 className="text-3xl sm:text-5xl font-bold">
             Built For Modern AI Teams
           </h2>
 
-          <p className="text-gray-400 mt-6 text-xl">
+          <p className="text-gray-400 mt-4 sm:mt-6 text-base sm:text-xl">
             Everything you need to understand and reduce AI infrastructure costs.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
 
           {features.map((feature, index) => (
             <div
               key={index}
-              className="bg-white/5 border border-white/10 rounded-3xl p-8 hover:border-white/20 transition"
+              className="bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 hover:border-white/20 transition"
             >
               <div className="mb-6 text-white">
                 {feature.icon}

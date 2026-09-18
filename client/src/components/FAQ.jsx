@@ -38,15 +38,15 @@ const FAQ = () => {
             <HelpCircle size={14} />
             FAQ
           </div>
-          <h2 className="text-3xl md:text-4xl font-extrabold mb-4 tracking-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-3 sm:mb-4 tracking-tight">
             Frequently Asked Questions
           </h2>
-          <p className="text-gray-400 text-base md:text-lg max-w-2xl mx-auto">
+          <p className="text-gray-400 text-sm sm:text-base md:text-lg max-w-2xl mx-auto">
             Everything you need to know about optimizing your team's AI infrastructure budget.
           </p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {faqData.map((item, index) => {
             const isOpen = activeIndex === index;
             return (
@@ -60,15 +60,15 @@ const FAQ = () => {
               >
                 <button
                   onClick={() => toggleIndex(index)}
-                  className="w-full flex items-center justify-between text-left px-6 py-5 focus:outline-none"
+                  className="w-full flex items-center justify-between text-left px-4 sm:px-6 py-4 sm:py-5 focus:outline-none gap-3"
                 >
-                  <span className="font-semibold text-gray-200 text-base md:text-lg hover:text-white transition-colors duration-200">
+                  <span className="font-semibold text-gray-200 text-sm sm:text-base md:text-lg hover:text-white transition-colors duration-200">
                     {item.question}
                   </span>
-                  <span className={`p-1.5 rounded-lg bg-gray-800/50 text-gray-400 transition-all duration-300 ${
+                  <span className={`p-1.5 rounded-lg bg-gray-800/50 text-gray-400 transition-all duration-300 flex-shrink-0 ${
                     isOpen ? "rotate-180 text-blue-400 bg-blue-500/10" : ""
                   }`}>
-                    <ChevronDown size={18} />
+                    <ChevronDown size={16} />
                   </span>
                 </button>
                 
@@ -77,7 +77,7 @@ const FAQ = () => {
                     isOpen ? "max-h-96 opacity-100 border-t border-gray-800/40" : "max-h-0 opacity-0"
                   }`}
                 >
-                  <p className="px-6 py-5 text-gray-400 text-sm md:text-base leading-relaxed bg-gray-950/20">
+                  <p className="px-4 sm:px-6 py-4 sm:py-5 text-gray-400 text-xs sm:text-sm md:text-base leading-relaxed bg-gray-950/20">
                     {item.answer}
                   </p>
                 </div>

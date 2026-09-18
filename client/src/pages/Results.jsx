@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { ArrowLeft, X, FileSpreadsheet, AlertTriangle, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
+import { Link, useParams } from "react-router-dom";
+import { ArrowLeft, X, FileSpreadsheet, AlertTriangle, CheckCircle2, XCircle, ArrowRight, Loader2, RefreshCw, Home as HomeIcon } from "lucide-react";
 import { saveLead } from "../api/leadApi";
+import { getReportById } from "../api/reportApi";
 import Toast from "../components/Toast";
 
 import { Legend, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 const Results = () => {
+  const { id } = useParams();
 
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
@@ -34,15 +36,51 @@ const Results = () => {
     }
   };
 
-  useEffect(() => {
-  document.title =
-    "Audit Results | SpendPilot AI";
-   }, []);
-
-  const [results] = useState(() => {
+  const [results, setResults] = useState(() => {
+    // If opening via a public link with :id, don't read local storage initially
+    if (window.location.pathname.startsWith("/report/")) return null;
     const savedResults = localStorage.getItem("auditResults");
     return savedResults ? JSON.parse(savedResults) : null;
   });
+
+  const [loading, setLoading] = useState(Boolean(id));
+  const [fetchError, setFetchError] = useState(null);
+
+  useEffect(() => {
+    if (id) {
+      document.title = "Public Audit Report | SpendPilot AI";
+      setLoading(true);
+      setFetchError(null);
+      getReportById(id)
+        .then((data) => {
+          if (data && data._id && data.auditedTools) {
+            setResults(data);
+          } else {
+            setFetchError("Audit report not found or record format is invalid.");
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to fetch public report:", err);
+          setFetchError("Unable to retrieve report. The server may be waking up or the link is invalid.");
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } else {
+      document.title = "Audit Results | SpendPilot AI";
+      if (!results) {
+        const saved = localStorage.getItem("auditResults");
+        if (saved) {
+          try {
+            setResults(JSON.parse(saved));
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      }
+      setLoading(false);
+    }
+  }, [id]);
 
   const [compareToolId, setCompareToolId] = useState(null);
 
@@ -296,12 +334,63 @@ const Results = () => {
     return null;
   };
 
-  if (!results) {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
-        <h1 className="text-2xl">
-          No audit results found.
-        </h1>
+      <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-16 h-16 rounded-3xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-6 shadow-2xl animate-pulse">
+          <Loader2 className="animate-spin text-blue-400" size={32} />
+        </div>
+        <h2 className="text-2xl font-bold mb-2 tracking-tight">Retrieving Audit Report</h2>
+        <p className="text-gray-400 text-sm max-w-md mb-6 leading-relaxed">
+          Loading verified FinOps optimization metrics and tooling analysis from cloud storage...
+        </p>
+        <div className="w-48 h-1.5 bg-gray-800 rounded-full overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-pulse"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (fetchError || !results) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center px-4 sm:px-6 py-12 text-center">
+        <div className="max-w-md w-full bg-gray-900 border border-gray-800 rounded-3xl p-6 sm:p-8 shadow-2xl">
+          <div className="w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mx-auto mb-5">
+            <AlertTriangle size={28} />
+          </div>
+          <h2 className="text-2xl font-bold mb-3 tracking-tight">
+            {fetchError ? "Audit Report Unavailable" : "No Audit Report Found"}
+          </h2>
+          <p className="text-gray-400 text-sm leading-relaxed mb-8">
+            {fetchError 
+              ? fetchError 
+              : "We couldn't find an active audit report in this browser session. Start a 60-second audit to analyze your organization's AI tooling spend."}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            {fetchError && id && (
+              <button
+                onClick={() => window.location.reload()}
+                className="flex-1 inline-flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-700 text-white px-5 py-3 rounded-2xl font-semibold text-sm transition"
+              >
+                <RefreshCw size={15} />
+                Retry
+              </button>
+            )}
+            <Link
+              to="/audit"
+              className="flex-1 inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-2xl font-semibold text-sm transition shadow-lg shadow-blue-500/20"
+            >
+              Start Free Audit
+            </Link>
+            <Link
+              to="/"
+              className="flex-1 inline-flex items-center justify-center gap-2 border border-gray-700 hover:bg-gray-800 text-gray-300 px-5 py-3 rounded-2xl font-semibold text-sm transition"
+            >
+              <HomeIcon size={15} />
+              Home
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
@@ -386,27 +475,38 @@ const Results = () => {
 
         <div className="mb-12">
           
-          <div className="mb-6 no-print">
+          <div className="mb-6 no-print flex items-center justify-between flex-wrap gap-4">
             <Link
-              to="/audit"
+              to={id ? "/" : "/audit"}
               className="inline-flex items-center gap-2 bg-gray-900/60 hover:bg-gray-800 border border-gray-800 hover:border-gray-700 text-gray-300 hover:text-white px-4 py-2.5 rounded-xl transition duration-200 text-sm font-semibold shadow-lg"
             >
               <ArrowLeft size={16} />
-              Back To Audit
+              {id ? "Back To Home" : "Back To Audit"}
             </Link>
+
+            {id && (
+              <Link
+                to="/audit"
+                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl transition duration-200 text-sm font-semibold shadow-lg shadow-blue-500/20"
+              >
+                Run Your Own Free Audit
+              </Link>
+            )}
           </div>
-          <div className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/20 text-green-400 px-4 py-2 rounded-full mb-6">
-            AI Spend Optimization Complete
+          <div className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/20 text-green-400 px-4 py-2 rounded-full mb-6 text-xs sm:text-sm font-semibold">
+            {id ? "Public Shareable Audit Report" : "AI Spend Optimization Complete"}
           </div>
 
-          <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-4">
-            Your AI Spend
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold leading-tight mb-4 tracking-tight">
+            {id ? "Enterprise AI Spend" : "Your AI Spend"}
             <br />
             Audit Results
           </h1>
 
-          <p className="text-gray-400 text-xl max-w-3xl leading-relaxed">
-            We analyzed your AI stack and identified optimization opportunities to reduce infrastructure costs and improve efficiency.
+          <p className="text-gray-400 text-base sm:text-xl max-w-3xl leading-relaxed">
+            {id 
+              ? "Verified AI infrastructure optimization audit generated by SpendPilot AI. Review potential cost-saving opportunities below."
+              : "We analyzed your AI stack and identified optimization opportunities to reduce infrastructure costs and improve efficiency."}
           </p>
         </div>
 
@@ -971,7 +1071,7 @@ const Results = () => {
       {/* BOOKING MODAL */}
       {showBookingModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4 no-print">
-          <div className="bg-gray-900 border border-gray-800 rounded-3xl p-6 max-w-md w-full relative shadow-2xl animate-toast-in">
+          <div className="bg-gray-900 border border-gray-800 rounded-3xl p-5 sm:p-6 max-w-md w-full relative shadow-2xl animate-toast-in max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => {
                 setShowBookingModal(false);

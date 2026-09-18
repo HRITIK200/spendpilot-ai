@@ -206,15 +206,15 @@ const AuditForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white px-6 py-10">
+    <div className="min-h-screen bg-gray-950 text-white px-4 sm:px-6 py-8 sm:py-10">
       <div className="max-w-4xl mx-auto">
         
         {/* Heading */}
-        <h1 className="text-4xl font-bold mb-2">
+        <h1 className="text-3xl sm:text-4xl font-bold mb-2 tracking-tight">
           AI Tool Audit Form
         </h1>
 
-        <p className="text-gray-400 mb-10">
+        <p className="text-gray-400 mb-8 sm:mb-10 text-sm sm:text-base">
           Add all AI tools your company currently uses.
         </p>
 
@@ -223,17 +223,17 @@ const AuditForm = () => {
           {tools.map((tool, index) => (
             <div
               key={tool.id}
-              className={`bg-gray-900 border ${getToolBorderClass(tool.tool)} rounded-2xl p-6 shadow-lg transition-all duration-300`}
+              className={`bg-gray-900 border ${getToolBorderClass(tool.tool)} rounded-2xl p-4 sm:p-6 shadow-lg transition-all duration-300`}
             >
               <div className="flex items-center justify-between mb-5">
-                <h2 className="text-xl font-semibold">
+                <h2 className="text-lg sm:text-xl font-semibold">
                   Tool #{index + 1}
                 </h2>
 
                 {tools.length > 1 && (
                   <button
                     onClick={() => removeTool(tool.id)}
-                    className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg transition"
+                    className="bg-red-500 hover:bg-red-600 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm transition"
                   >
                     Remove
                   </button>
@@ -241,7 +241,7 @@ const AuditForm = () => {
               </div>
 
               {/* Inputs */}
-              <div className="grid md:grid-cols-2 gap-5">
+              <div className="grid md:grid-cols-2 gap-4 sm:gap-5">
                 
               {/* Tool Selection */}
                 <div className="md:col-span-2">
@@ -250,7 +250,7 @@ const AuditForm = () => {
                     <Tooltip content="Select the specific generative AI tool you are currently billing." />
                   </label>
 
-                  <div className={`grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 bg-gray-950/40 rounded-2xl border ${
+                  <div className={`grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5 p-2 sm:p-3 bg-gray-950/40 rounded-2xl border ${
                     errors[tool.id]?.tool ? "border-red-500/50" : "border-gray-800"
                   }`}>
                     {toolData.map((t) => {
@@ -273,7 +273,7 @@ const AuditForm = () => {
                           key={t.tool}
                           type="button"
                           onClick={() => handleChange(tool.id, "tool", t.tool)}
-                          className={`px-3 py-3 rounded-xl border text-xs font-semibold transition-all duration-200 flex items-center justify-start gap-2.5 hover:scale-[1.02] active:scale-[0.98] ${
+                          className={`px-2.5 sm:px-3 py-2.5 sm:py-3 rounded-xl border text-[11px] sm:text-xs font-semibold transition-all duration-200 flex items-center justify-start gap-2 hover:scale-[1.02] active:scale-[0.98] ${
                             isSelected
                               ? `${activeStyle} border-2 shadow-lg`
                               : "border-gray-800 bg-gray-800/20 text-gray-400 hover:border-gray-700 hover:text-gray-300"

@@ -11,7 +11,7 @@ function Hero() {
   const annualSavings = monthlySavings * 12;
 
   return (
-    <section className="min-h-screen flex items-center justify-center px-6 py-20 relative overflow-hidden">
+    <section className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-14 sm:py-20 relative overflow-hidden">
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes float-slow-1 {
           0%, 100% {
@@ -91,32 +91,32 @@ function Hero() {
           </span>
         </div>
 
-        <h1 className="text-6xl md:text-7xl font-bold leading-tight">
+        <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold leading-tight tracking-tight">
           Stop Overspending
           <br />
           On AI Tools
         </h1>
 
-        <p className="text-gray-400 text-xl mt-6 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-gray-400 text-base sm:text-xl mt-5 sm:mt-6 max-w-2xl mx-auto leading-relaxed">
           Audit your ChatGPT, Claude, Cursor, Copilot and API spending instantly.
           Discover savings opportunities in under 60 seconds.
         </p>
 
-        <div className="flex items-center justify-center gap-4 mt-10 flex-wrap">
+        <div className="flex items-center justify-center gap-3 sm:gap-4 mt-8 sm:mt-10 flex-wrap">
           <Link
             to="/audit"
-            className="bg-white text-black px-7 py-4 rounded-2xl font-semibold hover:scale-105 transition"
+            className="bg-white text-black px-6 sm:px-7 py-3.5 sm:py-4 rounded-2xl font-semibold text-sm sm:text-base hover:scale-105 transition"
           >
             Run Free Audit
           </Link>
 
-          <button className="border border-white/10 px-7 py-4 rounded-2xl hover:bg-white/5 transition">
+          <button className="border border-white/10 px-6 sm:px-7 py-3.5 sm:py-4 rounded-2xl text-sm sm:text-base hover:bg-white/5 transition">
             View Demo
           </button>
         </div>
 
         {/* ROI Calculator Widget */}
-        <div className="max-w-xl mx-auto mt-14 p-6 md:p-8 bg-white/5 border border-white/10 rounded-3xl backdrop-blur-md shadow-2xl relative group hover:border-white/20 transition-all duration-300">
+        <div className="max-w-xl mx-auto mt-10 sm:mt-14 p-4 sm:p-6 md:p-8 bg-white/5 border border-white/10 rounded-3xl backdrop-blur-md shadow-2xl relative group hover:border-white/20 transition-all duration-300">
           <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-600 text-xs font-semibold px-4 py-1.5 rounded-full text-white uppercase tracking-wider shadow-lg">
             Interactive ROI Calculator
           </div>
