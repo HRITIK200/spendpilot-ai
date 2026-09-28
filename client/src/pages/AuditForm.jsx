@@ -5,6 +5,7 @@ import { toolData } from "../data/toolData";
 import { saveReport } from "../api/reportApi";
 import Tooltip from "../components/Tooltip";
 import Navbar from "../components/Navbar";
+import Toast from "../components/Toast";
 import { Lock, Sparkles } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
@@ -19,6 +20,7 @@ const AuditForm = () => {
   const { isAuthenticated, openAuthModal } = useAuth();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [toast, setToast] = useState(null);
 
   const [tools, setTools] = useState(() => {
   const savedTools = localStorage.getItem("auditTools");
@@ -179,6 +181,15 @@ const AuditForm = () => {
     if (!validateForm()) {
       return;
     }
+
+    if (!isAuthenticated) {
+      setToast({
+        message: "Login to generate audit report",
+        type: "error",
+      });
+      openAuthModal("login");
+      return;
+    }
     
     setLoading(true);
     
@@ -189,7 +200,7 @@ const AuditForm = () => {
       // Save locally for quick access
       localStorage.setItem("auditResults", JSON.stringify(savedReport));
 
-      // Append to past audits history (accessible in History drawer without login)
+      // Append to past audits history
       const existingHistory = JSON.parse(localStorage.getItem("spendpilot_history") || "[]");
       const newHistory = [savedReport, ...existingHistory.filter((h) => h._id !== savedReport._id)].slice(0, 15);
       localStorage.setItem("spendpilot_history", JSON.stringify(newHistory));
@@ -224,12 +235,12 @@ const AuditForm = () => {
           <div className="mb-8 p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-blue-950/30 border border-blue-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 shadow-xl">
             <div className="flex items-start sm:items-center gap-3">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
-                <Sparkles size={17} />
+                <Lock size={17} />
               </div>
               <div>
-                <h3 className="text-xs sm:text-sm font-bold text-white">Guest Audit Mode Active</h3>
+                <h3 className="text-xs sm:text-sm font-bold text-white">Login Required to Generate Audit</h3>
                 <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5">
-                  Audits work instantly without login and save to your browser's History. Sign in to sync across devices.
+                  Please log in or register to calculate ROI savings and sync your audit report.
                 </p>
               </div>
             </div>
@@ -455,20 +466,37 @@ const AuditForm = () => {
           <button
             onClick={handleGenerateReport}
             disabled={loading}
-            className="w-full sm:w-auto bg-green-600 hover:bg-green-500 text-white font-semibold px-8 py-3.5 sm:py-4 rounded-xl text-sm sm:text-base shadow-lg shadow-green-600/20 transition active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`w-full sm:w-auto font-semibold px-8 py-3.5 sm:py-4 rounded-xl text-sm sm:text-base shadow-lg transition active:scale-95 flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed ${
+              isAuthenticated
+                ? "bg-green-600 hover:bg-green-500 text-white shadow-green-600/20"
+                : "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-500/25"
+            }`}
           >
+            {!isAuthenticated && <Lock size={16} />}
             <span>
-              {loading ? "Generating Report..." : "Generate Audit Report"}
+              {loading
+                ? "Generating Report..."
+                : !isAuthenticated
+                ? "Login to Generate Audit Report"
+                : "Generate Audit Report"}
             </span>
           </button>
           {!isAuthenticated && (
             <p className="text-xs text-gray-500 mt-2.5">
-              Available instantly without login · Automatically saved to your local Audit History.
+              Login or create an account to run ROI calculations and view the audit report.
             </p>
           )}
         </div>
       </div>
     </div>
+
+    {toast && (
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast(null)}
+      />
+    )}
     </>
   );
 };

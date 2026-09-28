@@ -58,18 +58,18 @@ function Navbar() {
               FAQ
             </a>
 
-            {/* AUDIT HISTORY BUTTON (Always visible without login) */}
-            <button 
-              onClick={() => setIsDrawerOpen(true)}
-              className="text-gray-200 hover:text-white transition flex items-center gap-1.5 text-xs sm:text-sm focus:outline-none px-2 sm:px-2.5 py-1.5 rounded-xl hover:bg-white/10 border border-white/10 bg-white/[0.04]"
-              title="View past and demo audit history"
-            >
-              {isAuthenticated ? <Cloud size={14} className="text-blue-400 shrink-0" /> : <Clock size={14} className="text-blue-400 shrink-0" />}
-              <span className="inline">History</span>
-              {isAuthenticated && (
+            {/* AUDIT HISTORY BUTTON (Visible ONLY when user is logged in) */}
+            {isAuthenticated && (
+              <button 
+                onClick={() => setIsDrawerOpen(true)}
+                className="text-gray-200 hover:text-white transition flex items-center gap-1.5 text-xs sm:text-sm focus:outline-none px-2 sm:px-2.5 py-1.5 rounded-xl hover:bg-white/10 border border-white/10 bg-white/[0.04]"
+                title="View your cloud audit history"
+              >
+                <Cloud size={14} className="text-blue-400 shrink-0" />
+                <span className="inline">History</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-              )}
-            </button>
+              </button>
+            )}
 
             {/* AUTH / USER PROFILE */}
             {isAuthenticated ? (

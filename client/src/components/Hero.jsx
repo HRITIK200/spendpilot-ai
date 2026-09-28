@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { DEMO_AUDITS } from "../data/demoAudits";
 
 function Hero() {
+  const navigate = useNavigate();
   const [teamSize, setTeamSize] = useState(15);
 
   // Heuristics:
@@ -114,7 +115,7 @@ function Hero() {
           <button
             onClick={() => {
               localStorage.setItem("auditResults", JSON.stringify(DEMO_AUDITS[0]));
-              window.location.href = "/results";
+              navigate("/results", { state: { results: DEMO_AUDITS[0] } });
             }}
             className="border border-white/10 hover:border-white/30 px-5 sm:px-7 py-3 sm:py-4 rounded-2xl text-sm sm:text-base text-gray-200 hover:text-white hover:bg-white/5 transition cursor-pointer"
           >

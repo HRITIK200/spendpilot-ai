@@ -1,18 +1,19 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useLocation } from "react-router-dom";
 import { ArrowLeft, X, FileSpreadsheet, AlertTriangle, CheckCircle2, XCircle, ArrowRight, Loader2, RefreshCw, Home as HomeIcon, Mail, Lock } from "lucide-react";
 import { saveLead } from "../api/leadApi";
 import { getReportById } from "../api/reportApi";
 import Toast from "../components/Toast";
-import Navbar from "../components/Navbar";
 import WhatIfSimulator from "../components/WhatIfSimulator";
 import EmailReportModal from "../components/EmailReportModal";
 import { useAuth } from "../context/AuthContext";
+import { DEMO_AUDITS } from "../data/demoAudits";
 
 import { Legend, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 const Results = () => {
   const { id } = useParams();
+  const location = useLocation();
   const { isAuthenticated, openAuthModal } = useAuth();
 
   const [email, setEmail] = useState("");
@@ -28,7 +29,6 @@ const Results = () => {
     }
 
     try {
-
       await saveLead({
         email,
         company,
@@ -43,10 +43,20 @@ const Results = () => {
   };
 
   const [results, setResults] = useState(() => {
-    // If opening via a public link with :id, don't read local storage initially
+    if (location.state?.results) return location.state.results;
     if (window.location.pathname.startsWith("/report/")) return null;
     const savedResults = localStorage.getItem("auditResults");
-    return savedResults ? JSON.parse(savedResults) : null;
+    if (savedResults) {
+      try {
+        const parsed = JSON.parse(savedResults);
+        if (parsed && parsed.auditedTools && parsed.auditedTools.length > 0) {
+          return parsed;
+        }
+      } catch (e) {
+        console.error("Error reading saved auditResults:", e);
+      }
+    }
+    return DEMO_AUDITS[0];
   });
 
   const [loading, setLoading] = useState(Boolean(id));
@@ -67,6 +77,17 @@ const Results = () => {
         })
         .catch((err) => {
           console.error("Failed to fetch public report:", err);
+          const saved = localStorage.getItem("auditResults");
+          if (saved) {
+            try {
+              const parsed = JSON.parse(saved);
+              if (parsed._id === id || String(parsed._id) === String(id)) {
+                setResults(parsed);
+                setFetchError(null);
+                return;
+              }
+            } catch (e) {}
+          }
           setFetchError("Unable to retrieve report. The server may be waking up or the link is invalid.");
         })
         .finally(() => {
@@ -74,19 +95,28 @@ const Results = () => {
         });
     } else {
       document.title = "Audit Results | SpendPilot AI";
-      if (!results) {
+      if (location.state?.results) {
+        setResults(location.state.results);
+      } else if (!results || !results.auditedTools) {
         const saved = localStorage.getItem("auditResults");
         if (saved) {
           try {
-            setResults(JSON.parse(saved));
+            const parsed = JSON.parse(saved);
+            if (parsed && parsed.auditedTools) {
+              setResults(parsed);
+            } else {
+              setResults(DEMO_AUDITS[0]);
+            }
           } catch (e) {
-            console.error(e);
+            setResults(DEMO_AUDITS[0]);
           }
+        } else {
+          setResults(DEMO_AUDITS[0]);
         }
       }
       setLoading(false);
     }
-  }, [id]);
+  }, [id, location.state]);
 
   const [compareToolId, setCompareToolId] = useState(null);
 
@@ -404,9 +434,7 @@ const Results = () => {
 
 
   return (
-    <>
-      <Navbar />
-      <div className="min-h-screen bg-gray-950 text-white px-4 md:px-6 py-8 md:py-10 print-container">
+    <div className="min-h-screen bg-gray-950 text-white px-3 sm:px-6 py-6 sm:py-10 print-container">
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
           body {
@@ -1222,7 +1250,6 @@ const Results = () => {
         />
       )}
     </div>
-    </>
   );
 };
 
