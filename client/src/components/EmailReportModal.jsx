@@ -72,7 +72,7 @@ export default function EmailReportModal({ isOpen, onClose, reportId, reportData
         onClick={!isSubmitting ? onClose : undefined} 
       />
 
-      <div className="relative w-full max-w-lg bg-[#0d1322] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl z-10 animate-scale-up">
+      <div className="relative w-full max-w-lg bg-[#0d1322] border border-white/10 rounded-3xl p-5 sm:p-8 shadow-2xl z-10 max-h-[90vh] overflow-y-auto animate-scale-up">
         {/* Close Button */}
         <button
           onClick={onClose}

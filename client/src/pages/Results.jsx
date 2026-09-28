@@ -401,40 +401,7 @@ const Results = () => {
     );
   }
 
-  if (!id && !isAuthenticated) {
-    return (
-      <>
-        <Navbar />
-        <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center px-4 sm:px-6 py-12 text-center">
-          <div className="max-w-md w-full bg-gray-900 border border-gray-800 rounded-3xl p-6 sm:p-8 shadow-2xl">
-            <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center mx-auto mb-5">
-              <Lock size={28} />
-            </div>
-            <h2 className="text-2xl font-bold mb-3 tracking-tight">
-              Authentication Required
-            </h2>
-            <p className="text-gray-400 text-sm leading-relaxed mb-6">
-              Please sign in or create a free account to view your AI spend audit results, test what-if scenarios, and download executive reports.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={() => openAuthModal("login")}
-                className="flex-1 inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-2xl font-semibold text-sm transition shadow-lg shadow-blue-500/20"
-              >
-                Sign In
-              </button>
-              <button
-                onClick={() => openAuthModal("register")}
-                className="flex-1 inline-flex items-center justify-center gap-2 border border-white/10 hover:bg-white/5 text-gray-300 px-5 py-3 rounded-2xl font-semibold text-sm transition"
-              >
-                Create Account
-              </button>
-            </div>
-          </div>
-        </div>
-      </>
-    );
-  }
+
 
   return (
     <>
@@ -515,6 +482,30 @@ const Results = () => {
       <div className="max-w-7xl mx-auto">
 
         {/* PAGE HEADER */}
+        {!isAuthenticated && (
+          <div className="mb-6 p-3.5 sm:p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 no-print shadow-lg">
+            <div className="flex items-center gap-2.5">
+              <Sparkles className="text-blue-400 shrink-0" size={17} />
+              <p className="text-xs sm:text-sm text-gray-300">
+                <span className="font-semibold text-white">Local Audit Report:</span> Available without login. Sign in or register to sync to your cloud account or email executives.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+              <button
+                onClick={() => openAuthModal("login")}
+                className="flex-1 sm:flex-none text-xs font-semibold px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white transition text-center shadow-sm"
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => openAuthModal("register")}
+                className="flex-1 sm:flex-none text-xs font-semibold px-3.5 py-1.5 rounded-xl border border-white/10 hover:bg-white/5 text-gray-300 transition text-center"
+              >
+                Register
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="mb-12">
           
@@ -638,32 +629,33 @@ const Results = () => {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row flex-wrap gap-4 mb-12 no-print">
+        <div className="flex flex-col sm:flex-row flex-wrap gap-2.5 sm:gap-4 mb-10 sm:mb-12 no-print">
           <button 
               onClick={() => {
-                navigator.clipboard.writeText(
-                  `${window.location.origin}/report/${results._id}`
-                );
+                const reportUrl = (results._id && !String(results._id).startsWith("demo-"))
+                  ? `${window.location.origin}/report/${results._id}`
+                  : window.location.href;
+                navigator.clipboard.writeText(reportUrl);
 
                 setCopied(true);
-                setToast({ message: "Public report link copied to clipboard!", type: "success" });
+                setToast({ message: "Report link copied to clipboard!", type: "success" });
                 setTimeout(() => { setCopied(false); }, 2000);
               }}
-              className="flex-1 sm:flex-none text-center bg-blue-500 hover:bg-blue-600 px-5 py-3 rounded-2xl transition-all duration-300 text-sm font-semibold shadow-lg"
+              className="flex-1 sm:flex-none text-center bg-blue-500 hover:bg-blue-600 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl transition-all duration-300 text-xs sm:text-sm font-semibold shadow-lg"
           >
             {copied? "Link Copied!" : "Copy Public Report Link"}
           </button>
           
           <button
             onClick={() => window.print()}
-            className="flex-1 sm:flex-none text-center bg-purple-600 hover:bg-purple-700 px-5 py-3 rounded-2xl transition-all duration-300 font-semibold text-sm shadow-lg"
+            className="flex-1 sm:flex-none text-center bg-purple-600 hover:bg-purple-700 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl transition-all duration-300 font-semibold text-xs sm:text-sm shadow-lg"
           >
             Download PDF Report
           </button>
 
           <button
             onClick={handleExportCSV}
-            className="flex-1 sm:flex-none text-center justify-center bg-emerald-600 hover:bg-emerald-700 px-5 py-3 rounded-2xl transition-all duration-300 font-semibold text-sm shadow-lg flex items-center gap-2"
+            className="flex-1 sm:flex-none text-center justify-center bg-emerald-600 hover:bg-emerald-700 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl transition-all duration-300 font-semibold text-xs sm:text-sm shadow-lg flex items-center gap-2"
           >
             <FileSpreadsheet size={16} />
             Export CSV
@@ -671,7 +663,7 @@ const Results = () => {
 
           <button
             onClick={() => setShowEmailModal(true)}
-            className="flex-1 sm:flex-none text-center justify-center bg-indigo-600 hover:bg-indigo-750 px-5 py-3 rounded-2xl transition-all duration-300 font-semibold text-sm shadow-lg flex items-center gap-2"
+            className="flex-1 sm:flex-none text-center justify-center bg-indigo-600 hover:bg-indigo-750 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl transition-all duration-300 font-semibold text-xs sm:text-sm shadow-lg flex items-center gap-2"
           >
             <Mail size={16} />
             Email Executive Report

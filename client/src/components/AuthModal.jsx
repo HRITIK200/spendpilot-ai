@@ -58,7 +58,7 @@ const AuthModal = () => {
       {/* Click outside backdrop */}
       <div className="absolute inset-0" onClick={closeAuthModal} />
 
-      <div className="relative w-full max-w-md bg-gray-900 border border-gray-800 rounded-3xl p-6 sm:p-8 shadow-2xl z-10 overflow-hidden">
+      <div className="relative w-full max-w-md bg-gray-900 border border-gray-800 rounded-3xl p-5 sm:p-8 shadow-2xl z-10 max-h-[92vh] overflow-y-auto">
         {/* Ambient Top Glow */}
         <div className="absolute -top-24 -left-24 w-48 h-48 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />

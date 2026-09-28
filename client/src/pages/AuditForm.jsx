@@ -179,35 +179,27 @@ const AuditForm = () => {
     if (!validateForm()) {
       return;
     }
-
-    if (!isAuthenticated) {
-      openAuthModal("login");
-      return;
-    }
     
     setLoading(true);
     
     try {
-
-      //save report to MongoDB (server will run the Gemini API optimization engine or fallback rules)
+      // Save report to MongoDB (server will run the Gemini API optimization engine or fallback rules)
       const savedReport = await saveReport({ tools });
 
-      //save locally for quick access
+      // Save locally for quick access
       localStorage.setItem("auditResults", JSON.stringify(savedReport));
 
-      // append to past audits history
+      // Append to past audits history (accessible in History drawer without login)
       const existingHistory = JSON.parse(localStorage.getItem("spendpilot_history") || "[]");
-      const newHistory = [savedReport, ...existingHistory.filter((h) => h._id !== savedReport._id)].slice(0, 10);
+      const newHistory = [savedReport, ...existingHistory.filter((h) => h._id !== savedReport._id)].slice(0, 15);
       localStorage.setItem("spendpilot_history", JSON.stringify(newHistory));
 
-      //navigate to results page
+      // Navigate to results page
       navigate("/results");
 
     } catch (error) {
-
       console.log("Error generating report:", error);
       alert("Failed to generate report");
-
     } finally {
       setLoading(false);
     }
@@ -216,45 +208,45 @@ const AuditForm = () => {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gray-950 text-white px-4 sm:px-6 py-8 sm:py-10">
+      <div className="min-h-screen bg-gray-950 text-white px-3 sm:px-6 py-6 sm:py-10">
       <div className="max-w-4xl mx-auto">
         
         {/* Heading */}
-        <h1 className="text-3xl sm:text-4xl font-bold mb-2 tracking-tight">
+        <h1 className="text-2xl sm:text-4xl font-bold mb-2 tracking-tight">
           AI Tool Audit Form
         </h1>
 
-        <p className="text-gray-400 mb-6 text-sm sm:text-base">
+        <p className="text-gray-400 mb-6 text-xs sm:text-base">
           Add all AI tools your company currently uses.
         </p>
 
         {!isAuthenticated && (
-          <div className="mb-8 p-4 sm:p-5 rounded-3xl bg-blue-950/40 border border-blue-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
+          <div className="mb-8 p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-blue-950/30 border border-blue-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 shadow-xl">
             <div className="flex items-start sm:items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
-                <Lock size={18} />
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
+                <Sparkles size={17} />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-white">Sign In Required to Generate Audit</h3>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  Sign in or create a free account to run the AI optimization engine and sync your report to the cloud.
+                <h3 className="text-xs sm:text-sm font-bold text-white">Guest Audit Mode Active</h3>
+                <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5">
+                  Audits work instantly without login and save to your browser's History. Sign in to sync across devices.
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
               <button
                 type="button"
                 onClick={() => openAuthModal("login")}
-                className="flex-1 sm:flex-none text-xs font-semibold px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white transition text-center shadow-lg shadow-blue-500/20"
+                className="flex-1 sm:flex-none text-xs font-semibold px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white transition text-center shadow-lg shadow-blue-500/20"
               >
                 Sign In
               </button>
               <button
                 type="button"
                 onClick={() => openAuthModal("register")}
-                className="flex-1 sm:flex-none text-xs font-semibold px-4 py-2 rounded-xl border border-white/10 hover:bg-white/5 text-gray-300 transition text-center"
+                className="flex-1 sm:flex-none text-xs font-semibold px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-xl border border-white/10 hover:bg-white/5 text-gray-300 transition text-center"
               >
-                Create Account
+                Register
               </button>
             </div>
           </div>
@@ -463,24 +455,15 @@ const AuditForm = () => {
           <button
             onClick={handleGenerateReport}
             disabled={loading}
-            className={`px-8 py-4 rounded-xl font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2.5 shadow-lg ${
-              isAuthenticated
-                ? "bg-green-600 hover:bg-green-700 text-white shadow-green-600/20"
-                : "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-500/25"
-            }`}
+            className="w-full sm:w-auto bg-green-600 hover:bg-green-500 text-white font-semibold px-8 py-3.5 sm:py-4 rounded-xl text-sm sm:text-base shadow-lg shadow-green-600/20 transition active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {!isAuthenticated && <Lock size={16} />}
             <span>
-              {loading
-                ? "Generating Report..."
-                : !isAuthenticated
-                ? "Sign In to Generate Audit Report"
-                : "Generate Audit Report"}
+              {loading ? "Generating Report..." : "Generate Audit Report"}
             </span>
           </button>
           {!isAuthenticated && (
             <p className="text-xs text-gray-500 mt-2.5">
-              Account sign-in or registration required to calculate savings and view the full report.
+              Available instantly without login · Automatically saved to your local Audit History.
             </p>
           )}
         </div>

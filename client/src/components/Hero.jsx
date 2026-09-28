@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { DEMO_AUDITS } from "../data/demoAudits";
 
 function Hero() {
   const [teamSize, setTeamSize] = useState(15);
@@ -105,13 +106,19 @@ function Hero() {
         <div className="flex items-center justify-center gap-3 sm:gap-4 mt-8 sm:mt-10 flex-wrap">
           <Link
             to="/audit"
-            className="bg-white text-black px-6 sm:px-7 py-3.5 sm:py-4 rounded-2xl font-semibold text-sm sm:text-base hover:scale-105 transition"
+            className="bg-white text-black px-5 sm:px-7 py-3 sm:py-4 rounded-2xl font-semibold text-sm sm:text-base hover:scale-105 transition shadow-lg"
           >
             Run Free Audit
           </Link>
 
-          <button className="border border-white/10 px-6 sm:px-7 py-3.5 sm:py-4 rounded-2xl text-sm sm:text-base hover:bg-white/5 transition">
-            View Demo
+          <button
+            onClick={() => {
+              localStorage.setItem("auditResults", JSON.stringify(DEMO_AUDITS[0]));
+              window.location.href = "/results";
+            }}
+            className="border border-white/10 hover:border-white/30 px-5 sm:px-7 py-3 sm:py-4 rounded-2xl text-sm sm:text-base text-gray-200 hover:text-white hover:bg-white/5 transition cursor-pointer"
+          >
+            View Live Demo
           </button>
         </div>
 
