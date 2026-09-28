@@ -152,14 +152,20 @@ The backend handles:
 
 ## Screenshots
 
-### Home Page
-![Home](./screenshot/landing_page.png)
+### 1. Landing Page & Interactive ROI Calculator
+![Landing Page](./screenshot/landing_page.png)
 
-### Audit Dashboard
-![audit](./screenshot/audit_form.png)
+### 2. Audit Configuration Dashboard
+![Audit Form](./screenshot/audit_form.png)
 
-### Results Analytics
-![results](./screenshot/results.png)
+### 3. Optimization Analytics & What-If Scenario Simulator
+![Results Analytics](./screenshot/results.png)
+
+### 4. User Authentication (Sign In)
+![Sign In Modal](./screenshot/loginform.png)
+
+### 5. Enterprise Account Registration
+![Register Modal](./screenshot/registerform.png)
 
 ---
 
@@ -205,12 +211,10 @@ VITE_API_BASE_URL=http://localhost:5000
 ## Server(.env)
 
 ```env
-
-MONGO_URI=mongodb://spendpilotadmin:spendpilot123@ac-5d5dcpw-shard-00-00.jgn3sdo.mongodb.net:27017,ac-5d5dcpw-shard-00-01.jgn3sdo.mongodb.net:27017,ac-5d5dcpw-shard-00-02.jgn3sdo.mongodb.net:27017/spendpilot?ssl=true&replicaSet=atlas-1bfus0-shard-0&authSource=admin&appName=Cluster0
-
+MONGO_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/spendpilot?retryWrites=true&w=majority
 PORT=5000
-
-RESEND_API_KEY=re_CuFVwetU_E6k8LgD36uaVdXsMSjvuGgP2
+RESEND_API_KEY=your_resend_api_key_here
+JWT_SECRET=your_jwt_secret_key_here
 ```
 
 ---
