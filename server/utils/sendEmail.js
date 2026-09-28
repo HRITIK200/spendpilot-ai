@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 import nodemailer from "nodemailer";
 
-const RESEND_SANDBOX_OWNER = "palhritik18@gmail.com";
+const RESEND_SANDBOX_OWNER = process.env.ADMIN_EMAIL || process.env.OWNER_EMAIL || "";
 
 /**
  * Generates modern executive HTML template for SpendPilot AI subscribers.
@@ -131,34 +131,34 @@ export const sendLeadEmail = async (email, company = "") => {
 
       // If Resend gave 403 sandbox restriction because recipient is not the account owner:
       if (error && (error.statusCode === 403 || error.name === "validation_error")) {
-        // Send notification to account owner so lead is never lost!
-        try {
-          await resend.emails.send({
-            from: "SpendPilot AI <onboarding@resend.dev>",
-            to: RESEND_SANDBOX_OWNER,
-            subject: `[SpendPilot AI Lead] New subscriber: ${normalizedEmail}`,
-            html: `
-              <div style="font-family: Arial, sans-serif; padding: 20px; color: #1e293b;">
-                <h2 style="color: #2563eb;">New Audit Updates Subscriber Captured!</h2>
-                <p><strong>Subscriber Email:</strong> ${normalizedEmail}</p>
-                <p><strong>Company:</strong> ${company || "Not provided"}</p>
-                <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
-                <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
-                <p style="color: #64748b; font-size: 12px;">
-                  <em>Note: Resend is operating in sandbox mode with <code>onboarding@resend.dev</code>. In sandbox mode, Resend permits outbound test emails only to your account owner address (<code>${RESEND_SANDBOX_OWNER}</code>). To enable direct automated delivery to any recipient inbox, verify a custom domain at resend.com/domains or configure SMTP credentials in server/.env.</em>
-                </p>
-              </div>
-            `,
-          });
-          console.log(`Lead notification dispatched to admin (${RESEND_SANDBOX_OWNER})`);
-        } catch (adminErr) {
-          console.error("Failed to dispatch admin notification:", adminErr);
+        if (RESEND_SANDBOX_OWNER) {
+          try {
+            await resend.emails.send({
+              from: "SpendPilot AI <onboarding@resend.dev>",
+              to: RESEND_SANDBOX_OWNER,
+              subject: `[SpendPilot AI Lead] New subscriber: ${normalizedEmail}`,
+              html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px; color: #1e293b;">
+                  <h2 style="color: #2563eb;">New Audit Updates Subscriber Captured!</h2>
+                  <p><strong>Subscriber Email:</strong> ${normalizedEmail}</p>
+                  <p><strong>Company:</strong> ${company || "Not provided"}</p>
+                  <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
+                  <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
+                  <p style="color: #64748b; font-size: 12px;">
+                    <em>Note: Resend is operating in sandbox mode with <code>onboarding@resend.dev</code>. To enable direct automated delivery to any recipient inbox, verify a custom domain at resend.com/domains or configure SMTP credentials in server/.env.</em>
+                  </p>
+                </div>
+              `,
+            });
+            console.log(`Lead notification dispatched to admin (${RESEND_SANDBOX_OWNER})`);
+          } catch (adminErr) {
+            console.error("Failed to dispatch admin notification:", adminErr);
+          }
         }
 
         return {
           success: false,
           isSandbox: true,
-          sandboxOwner: RESEND_SANDBOX_OWNER,
           message: error.message,
         };
       }

@@ -48,15 +48,6 @@ const Results = () => {
           type: "success",
           text: `Confirmation email sent to ${trimmedEmail}. Please check your inbox (and spam/promotions folder).`,
         });
-      } else if (res?.emailStatus?.isSandbox) {
-        setToast({
-          message: "Subscribed! (Resend Sandbox: check palhritik18@gmail.com)",
-          type: "success",
-        });
-        setLeadNotice({
-          type: "info",
-          text: `Subscribed! Note: In free testing sandbox mode, Resend routes test emails to the account owner (palhritik18@gmail.com). To test direct delivery into your own inbox, enter palhritik18@gmail.com or configure a verified domain in Resend.`,
-        });
       } else {
         setToast({ message: "Successfully registered for audit updates!", type: "success" });
         setLeadNotice({
@@ -1209,8 +1200,8 @@ const Results = () => {
               )}
             </button>
 
-            <span className="text-xs text-gray-500">
-              * Live test delivery is active for <code className="text-blue-400 font-mono">palhritik18@gmail.com</code> (Resend sandbox).
+            <span className="text-xs text-gray-500 flex items-center gap-1.5">
+              <span>🔒</span> Zero spam. Only actionable SaaS FinOps insights.
             </span>
           </div>
 
