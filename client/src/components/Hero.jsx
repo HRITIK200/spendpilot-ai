@@ -1,9 +1,7 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { DEMO_AUDITS } from "../data/demoAudits";
+import { Link } from "react-router-dom";
 
 function Hero() {
-  const navigate = useNavigate();
   const [teamSize, setTeamSize] = useState(15);
 
   // Heuristics:
@@ -107,20 +105,11 @@ function Hero() {
         <div className="flex items-center justify-center gap-3 sm:gap-4 mt-8 sm:mt-10 flex-wrap">
           <Link
             to="/audit"
-            className="bg-white text-black px-5 sm:px-7 py-3 sm:py-4 rounded-2xl font-semibold text-sm sm:text-base hover:scale-105 transition shadow-lg"
+            className="bg-white text-black px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl font-semibold text-sm sm:text-base hover:scale-105 transition shadow-lg inline-flex items-center gap-2 group"
           >
             Run Free Audit
+            <span className="group-hover:translate-x-0.5 transition-transform">&rarr;</span>
           </Link>
-
-          <button
-            onClick={() => {
-              localStorage.setItem("auditResults", JSON.stringify(DEMO_AUDITS[0]));
-              navigate("/results", { state: { results: DEMO_AUDITS[0] } });
-            }}
-            className="border border-white/10 hover:border-white/30 px-5 sm:px-7 py-3 sm:py-4 rounded-2xl text-sm sm:text-base text-gray-200 hover:text-white hover:bg-white/5 transition cursor-pointer"
-          >
-            View Live Demo
-          </button>
         </div>
 
         {/* ROI Calculator Widget */}

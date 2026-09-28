@@ -178,7 +178,7 @@ router.post("/:id/email", validateRequest(emailSchema), async (req, res) => {
       });
     }
 
-    const { error: resendError } = await resend.emails.send({
+    const { data: resendData, error: resendError } = await resend.emails.send({
       from: "SpendPilot AI <onboarding@resend.dev>",
       to: [recipientEmail],
       subject: `Executive AI Spend Audit: Projected $${report.totalAnnualSavings}/yr Savings Found`,
@@ -186,7 +186,32 @@ router.post("/:id/email", validateRequest(emailSchema), async (req, res) => {
     });
 
     if (resendError) {
-      console.error("Resend API delivery error:", resendError);
+      console.warn("Resend API delivery error/restriction:", resendError);
+      if (resendError.statusCode === 403 || resendError.name === "validation_error") {
+        // Send to verified owner address so audit is not lost
+        try {
+          await resend.emails.send({
+            from: "SpendPilot AI <onboarding@resend.dev>",
+            to: ["palhritik18@gmail.com"],
+            subject: `[Executive Audit Forwarded for ${recipientEmail}] Projected $${report.totalAnnualSavings}/yr Savings`,
+            html: `
+              <div style="font-family: Arial, sans-serif; padding: 16px;">
+                <p><strong>Note:</strong> Resend is in free testing sandbox mode. The user requested this report for <strong>${recipientEmail}</strong>. Below is the executive audit report:</p>
+                <hr/>
+                ${emailHtml}
+              </div>
+            `,
+          });
+        } catch (fwdErr) {
+          console.error("Failed to forward to admin:", fwdErr);
+        }
+
+        return res.json({
+          message: `Notice: Resend sandbox mode active. Report delivered to account owner (palhritik18@gmail.com). To deliver to external inboxes like ${recipientEmail}, verify custom domain in Resend.`,
+          isSandbox: true,
+        });
+      }
+
       return res.status(502).json({
         message: `Email dispatch failed: ${resendError.message}`,
       });

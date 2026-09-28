@@ -1,17 +1,8 @@
 import axios from "axios";
+import { getApiBaseUrl } from "./apiConfig";
 
-const API =
-  `${import.meta.env.VITE_API_BASE_URL}/api/leads`;
-
-export const saveLead = async (
-  leadData
-) => {
-
-  const response =
-    await axios.post(
-      API,
-      leadData
-    );
-
+export const saveLead = async (leadData) => {
+  const API = `${getApiBaseUrl()}/api/leads`;
+  const response = await axios.post(API, leadData);
   return response.data;
 };

@@ -19,26 +19,57 @@ const Results = () => {
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
   const [leadSaved, setLeadSaved] = useState(false);
+  const [isSubmittingLead, setIsSubmittingLead] = useState(false);
+  const [leadNotice, setLeadNotice] = useState(null);
   const [toast, setToast] = useState(null);
   const [showEmailModal, setShowEmailModal] = useState(false);
 
   const handleLeadSubmit = async () => {
-    if (!email) {
-      setToast({ message: "Please enter your email address", type: "error" });
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !trimmedEmail.includes("@")) {
+      setToast({ message: "Please enter a valid email address", type: "error" });
       return;
     }
 
+    setIsSubmittingLead(true);
+    setLeadNotice(null);
+
     try {
-      await saveLead({
-        email,
-        company,
+      const res = await saveLead({
+        email: trimmedEmail,
+        company: company.trim(),
       });
 
       setLeadSaved(true);
-      setToast({ message: "Successfully registered for updates!", type: "success" });
+
+      if (res?.emailStatus?.delivered) {
+        setToast({ message: `Confirmation email sent to ${trimmedEmail}!`, type: "success" });
+        setLeadNotice({
+          type: "success",
+          text: `Confirmation email sent to ${trimmedEmail}. Please check your inbox (and spam/promotions folder).`,
+        });
+      } else if (res?.emailStatus?.isSandbox) {
+        setToast({
+          message: "Subscribed! (Resend Sandbox: check palhritik18@gmail.com)",
+          type: "success",
+        });
+        setLeadNotice({
+          type: "info",
+          text: `Subscribed! Note: In free testing sandbox mode, Resend routes test emails to the account owner (palhritik18@gmail.com). To test direct delivery into your own inbox, enter palhritik18@gmail.com or configure a verified domain in Resend.`,
+        });
+      } else {
+        setToast({ message: "Successfully registered for audit updates!", type: "success" });
+        setLeadNotice({
+          type: "success",
+          text: `Thank you for subscribing! Your email has been added to our FinOps intelligence updates.`,
+        });
+      }
     } catch (error) {
       console.error(error);
-      setToast({ message: "Failed to subscribe. Please try again.", type: "error" });
+      const errMsg = error.response?.data?.message || "Failed to subscribe. Please try again.";
+      setToast({ message: errMsg, type: "error" });
+    } finally {
+      setIsSubmittingLead(false);
     }
   };
 
@@ -1107,42 +1138,97 @@ const Results = () => {
 
         {/* EMAIL CAPTURE SECTION */}
 
-         <div className="mt-12 bg-gray-900 border border-gray-800 rounded-3xl p-6 md:p-8 no-print">
+        {/* EMAIL CAPTURE SECTION */}
+        <div className="mt-12 bg-gradient-to-br from-gray-900 via-gray-900 to-gray-950 border border-gray-800 rounded-3xl p-5 sm:p-7 md:p-8 no-print shadow-xl">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">
+              FinOps Digest
+            </span>
+          </div>
 
-          <h2 className="text-3xl font-bold mb-3">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
             Get Audit Updates
           </h2>
 
-          <p className="text-gray-400 text-lg mb-6 leading-relaxed">
-            Receive future AI tooling optimization insights and infrastructure recommendations directly in your inbox.
+          <p className="text-gray-400 text-sm sm:text-base mb-6 leading-relaxed max-w-2xl">
+            Receive monthly AI tooling optimization insights, benchmark pricing adjustments, and vendor consolidation recommendations directly in your inbox.
           </p>
 
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            {/* EMAIL INPUT */}
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                Work Email <span className="text-rose-400">*</span>
+              </label>
+              <input
+                type="email"
+                placeholder="name@company.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-gray-800/80 border border-gray-700 rounded-2xl px-4 py-3 text-sm sm:text-base text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              />
+            </div>
 
-          {/* EMAIL INPUT */}
-          <input
-              type="email"
-              placeholder="Enter your email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="bg-gray-800/70 border border-gray-700 rounded-2xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-          />
-          {/* COMPANY INPUT */}
-          <input
-              type="text"
-              placeholder="Company name (optional)"
-              value={company}
-              onChange={(e) => setCompany(e.target.value)}
-              className="bg-gray-800/70 border border-gray-700 rounded-2xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-          />
+            {/* COMPANY INPUT */}
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                Company Name (optional)
+              </label>
+              <input
+                type="text"
+                placeholder="Acme Inc."
+                value={company}
+                onChange={(e) => setCompany(e.target.value)}
+                className="w-full bg-gray-800/80 border border-gray-700 rounded-2xl px-4 py-3 text-sm sm:text-base text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              />
+            </div>
           </div>
-          {/* BUTTON */}
-          <button
+
+          {/* SUBMIT BUTTON & TIP */}
+          <div className="mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <button
               onClick={handleLeadSubmit}
-              className="mt-4 bg-blue-500 hover:bg-blue-600 px-5 py-3 rounded-2xl font-semibold transition"
-          >
-            {leadSaved ? "Saved Successfully.. Thank you!" : "Get updates"}
-          </button>
+              disabled={isSubmittingLead}
+              className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-6 py-3 rounded-2xl font-semibold text-sm sm:text-base transition cursor-pointer shadow-lg shadow-blue-600/20"
+            >
+              {isSubmittingLead ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  <span>Subscribing...</span>
+                </>
+              ) : leadSaved ? (
+                <>
+                  <CheckCircle2 size={18} className="text-white" />
+                  <span>Subscribed & Saved</span>
+                </>
+              ) : (
+                <>
+                  <Mail size={18} />
+                  <span>Get Audit Updates</span>
+                </>
+              )}
+            </button>
+
+            <span className="text-xs text-gray-500">
+              * Live test delivery is active for <code className="text-blue-400 font-mono">palhritik18@gmail.com</code> (Resend sandbox).
+            </span>
+          </div>
+
+          {/* STATUS NOTICE BOX */}
+          {leadNotice && (
+            <div
+              className={`mt-4 p-4 rounded-2xl border text-xs sm:text-sm leading-relaxed ${
+                leadNotice.type === "success"
+                  ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
+                  : "bg-blue-500/10 border-blue-500/30 text-blue-300"
+              }`}
+            >
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 size={18} className="shrink-0 mt-0.5" />
+                <p>{leadNotice.text}</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
