@@ -5,7 +5,8 @@ import { toolData } from "../data/toolData";
 import { saveReport } from "../api/reportApi";
 import Tooltip from "../components/Tooltip";
 import Navbar from "../components/Navbar";
-
+import { Lock, Sparkles } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 const AuditForm = () => {
 
@@ -15,6 +16,7 @@ const AuditForm = () => {
    }, []);
 
   const navigate = useNavigate();
+  const { isAuthenticated, openAuthModal } = useAuth();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -177,6 +179,11 @@ const AuditForm = () => {
     if (!validateForm()) {
       return;
     }
+
+    if (!isAuthenticated) {
+      openAuthModal("login");
+      return;
+    }
     
     setLoading(true);
     
@@ -217,9 +224,41 @@ const AuditForm = () => {
           AI Tool Audit Form
         </h1>
 
-        <p className="text-gray-400 mb-8 sm:mb-10 text-sm sm:text-base">
+        <p className="text-gray-400 mb-6 text-sm sm:text-base">
           Add all AI tools your company currently uses.
         </p>
+
+        {!isAuthenticated && (
+          <div className="mb-8 p-4 sm:p-5 rounded-3xl bg-blue-950/40 border border-blue-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
+            <div className="flex items-start sm:items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
+                <Lock size={18} />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white">Sign In Required to Generate Audit</h3>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  Sign in or create a free account to run the AI optimization engine and sync your report to the cloud.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={() => openAuthModal("login")}
+                className="flex-1 sm:flex-none text-xs font-semibold px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white transition text-center shadow-lg shadow-blue-500/20"
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => openAuthModal("register")}
+                className="flex-1 sm:flex-none text-xs font-semibold px-4 py-2 rounded-xl border border-white/10 hover:bg-white/5 text-gray-300 transition text-center"
+              >
+                Create Account
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Tool Cards */}
         <div className="space-y-6">
@@ -422,11 +461,28 @@ const AuditForm = () => {
         {/* Submit Button */}
         <div className="mt-10">
           <button
-            onClick={handleGenerateReport} disabled={loading}
-            className="bg-green-600 hover:bg-green-700 px-8 py-4 rounded-xl font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handleGenerateReport}
+            disabled={loading}
+            className={`px-8 py-4 rounded-xl font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2.5 shadow-lg ${
+              isAuthenticated
+                ? "bg-green-600 hover:bg-green-700 text-white shadow-green-600/20"
+                : "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-500/25"
+            }`}
           >
-           {loading ? "Generating Report..." : "Generate Audit Report"  }
+            {!isAuthenticated && <Lock size={16} />}
+            <span>
+              {loading
+                ? "Generating Report..."
+                : !isAuthenticated
+                ? "Sign In to Generate Audit Report"
+                : "Generate Audit Report"}
+            </span>
           </button>
+          {!isAuthenticated && (
+            <p className="text-xs text-gray-500 mt-2.5">
+              Account sign-in or registration required to calculate savings and view the full report.
+            </p>
+          )}
         </div>
       </div>
     </div>

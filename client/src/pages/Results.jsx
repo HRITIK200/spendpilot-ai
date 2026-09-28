@@ -1,17 +1,19 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, X, FileSpreadsheet, AlertTriangle, CheckCircle2, XCircle, ArrowRight, Loader2, RefreshCw, Home as HomeIcon, Mail } from "lucide-react";
+import { ArrowLeft, X, FileSpreadsheet, AlertTriangle, CheckCircle2, XCircle, ArrowRight, Loader2, RefreshCw, Home as HomeIcon, Mail, Lock } from "lucide-react";
 import { saveLead } from "../api/leadApi";
 import { getReportById } from "../api/reportApi";
 import Toast from "../components/Toast";
 import Navbar from "../components/Navbar";
 import WhatIfSimulator from "../components/WhatIfSimulator";
 import EmailReportModal from "../components/EmailReportModal";
+import { useAuth } from "../context/AuthContext";
 
 import { Legend, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 const Results = () => {
   const { id } = useParams();
+  const { isAuthenticated, openAuthModal } = useAuth();
 
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
@@ -396,6 +398,41 @@ const Results = () => {
           </div>
         </div>
       </div>
+    );
+  }
+
+  if (!id && !isAuthenticated) {
+    return (
+      <>
+        <Navbar />
+        <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center px-4 sm:px-6 py-12 text-center">
+          <div className="max-w-md w-full bg-gray-900 border border-gray-800 rounded-3xl p-6 sm:p-8 shadow-2xl">
+            <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center mx-auto mb-5">
+              <Lock size={28} />
+            </div>
+            <h2 className="text-2xl font-bold mb-3 tracking-tight">
+              Authentication Required
+            </h2>
+            <p className="text-gray-400 text-sm leading-relaxed mb-6">
+              Please sign in or create a free account to view your AI spend audit results, test what-if scenarios, and download executive reports.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => openAuthModal("login")}
+                className="flex-1 inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-2xl font-semibold text-sm transition shadow-lg shadow-blue-500/20"
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => openAuthModal("register")}
+                className="flex-1 inline-flex items-center justify-center gap-2 border border-white/10 hover:bg-white/5 text-gray-300 px-5 py-3 rounded-2xl font-semibold text-sm transition"
+              >
+                Create Account
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
     );
   }
 
