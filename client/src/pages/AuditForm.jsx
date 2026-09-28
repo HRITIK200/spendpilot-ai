@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { toolData } from "../data/toolData";
 import { saveReport } from "../api/reportApi";
 import Tooltip from "../components/Tooltip";
+import Navbar from "../components/Navbar";
 
 
 const AuditForm = () => {
@@ -206,7 +207,9 @@ const AuditForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white px-4 sm:px-6 py-8 sm:py-10">
+    <>
+      <Navbar />
+      <div className="min-h-screen bg-gray-950 text-white px-4 sm:px-6 py-8 sm:py-10">
       <div className="max-w-4xl mx-auto">
         
         {/* Heading */}
@@ -427,6 +430,7 @@ const AuditForm = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

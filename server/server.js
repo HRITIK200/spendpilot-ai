@@ -7,6 +7,7 @@ import helmet from "helmet";
 
 import reportRoutes from "./routes/reportRoutes.js";
 import leadRoutes from "./routes/leadRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 
 dotenv.config();
 
@@ -14,13 +15,9 @@ const app = express();
 app.use(helmet());
 
 const apiLimiter = rateLimit({
-
   windowMs: 15 * 60 * 1000,
-
   max: 100,
-
-  message:
-    "Too many requests. Please try again later.",
+  message: "Too many requests. Please try again later.",
 });
 
 app.use(
@@ -37,8 +34,8 @@ app.get("/", (req, res) => {
   res.send("SpendPilot AI Backend Running");
 });
 
+app.use("/api/auth", authRoutes);
 app.use("/api/reports", reportRoutes);
-
 app.use("/api/leads", leadRoutes);
 
 const PORT = process.env.PORT || 5000;

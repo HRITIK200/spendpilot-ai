@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, X, FileSpreadsheet, AlertTriangle, CheckCircle2, XCircle, ArrowRight, Loader2, RefreshCw, Home as HomeIcon } from "lucide-react";
+import { ArrowLeft, X, FileSpreadsheet, AlertTriangle, CheckCircle2, XCircle, ArrowRight, Loader2, RefreshCw, Home as HomeIcon, Mail } from "lucide-react";
 import { saveLead } from "../api/leadApi";
 import { getReportById } from "../api/reportApi";
 import Toast from "../components/Toast";
+import Navbar from "../components/Navbar";
+import WhatIfSimulator from "../components/WhatIfSimulator";
+import EmailReportModal from "../components/EmailReportModal";
 
 import { Legend, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
@@ -14,6 +17,7 @@ const Results = () => {
   const [company, setCompany] = useState("");
   const [leadSaved, setLeadSaved] = useState(false);
   const [toast, setToast] = useState(null);
+  const [showEmailModal, setShowEmailModal] = useState(false);
 
   const handleLeadSubmit = async () => {
     if (!email) {
@@ -396,7 +400,9 @@ const Results = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white px-4 md:px-6 py-8 md:py-10 print-container">
+    <>
+      <Navbar />
+      <div className="min-h-screen bg-gray-950 text-white px-4 md:px-6 py-8 md:py-10 print-container">
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
           body {
@@ -625,6 +631,14 @@ const Results = () => {
             <FileSpreadsheet size={16} />
             Export CSV
           </button>
+
+          <button
+            onClick={() => setShowEmailModal(true)}
+            className="flex-1 sm:flex-none text-center justify-center bg-indigo-600 hover:bg-indigo-750 px-5 py-3 rounded-2xl transition-all duration-300 font-semibold text-sm shadow-lg flex items-center gap-2"
+          >
+            <Mail size={16} />
+            Email Executive Report
+          </button>
         </div>
 
         {/* TOP SAVINGS INSIGHT OR FULLY OPTIMIZED BANNER */}
@@ -726,6 +740,13 @@ const Results = () => {
             </div>
           </div>
         </div>
+
+        {/* INTERACTIVE WHAT-IF SCENARIO SIMULATOR */}
+        <WhatIfSimulator
+          auditedTools={results.auditedTools}
+          originalScore={score}
+          originalMonthlySavings={results.totalMonthlySavings}
+        />
         
         {results.totalMonthlySavings < 100 && (
 
@@ -1153,6 +1174,17 @@ const Results = () => {
         </div>
       )}
 
+      {/* EMAIL EXECUTIVE REPORT MODAL */}
+      <EmailReportModal
+        isOpen={showEmailModal}
+        onClose={() => setShowEmailModal(false)}
+        reportId={results._id}
+        reportData={results}
+        onEmailSent={(msg) => {
+          setToast({ message: msg || "Executive report dispatched successfully!", type: "success" });
+        }}
+      />
+
       {toast && (
         <Toast
           message={toast.message}
@@ -1161,6 +1193,7 @@ const Results = () => {
         />
       )}
     </div>
+    </>
   );
 };
 
