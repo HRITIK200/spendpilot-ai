@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Clock, X, Trash2, Cloud, User, LogOut, LogIn, Building, Sparkles, ArrowRight } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import AuthModal from "./AuthModal";
@@ -7,6 +7,10 @@ import { getUserReports } from "../api/reportApi";
 import { DEMO_AUDITS } from "../data/demoAudits";
 
 function Navbar() {
+  const location = useLocation();
+  const isHomePage = location.pathname === "/";
+  const isAuditPage = location.pathname === "/audit";
+
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [history, setHistory] = useState([]);
   const [activeTab, setActiveTab] = useState("my"); // "my" or "demo"
@@ -50,13 +54,18 @@ function Navbar() {
 
           {/* NAV CONTROLS */}
           <div className="flex items-center gap-1.5 xs:gap-2.5 sm:gap-4 md:gap-6">
-            <a href="/#features" className="hidden md:inline-block text-gray-300 hover:text-white text-sm transition">
-              Features
-            </a>
+            {/* FEATURES & FAQ (Visible ONLY on home page) */}
+            {isHomePage && (
+              <>
+                <a href="#features" className="hidden md:inline-block text-gray-300 hover:text-white text-sm transition">
+                  Features
+                </a>
 
-            <a href="/#faq" className="hidden md:inline-block text-gray-300 hover:text-white text-sm transition">
-              FAQ
-            </a>
+                <a href="#faq" className="hidden md:inline-block text-gray-300 hover:text-white text-sm transition">
+                  FAQ
+                </a>
+              </>
+            )}
 
             {/* AUDIT HISTORY BUTTON (Visible ONLY when user is logged in) */}
             {isAuthenticated && (
@@ -104,13 +113,15 @@ function Navbar() {
               </button>
             )}
 
-            {/* START AUDIT CTA */}
-            <Link
-              to="/audit"
-              className="bg-white hover:bg-gray-100 text-black px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold hover:shadow-lg hover:shadow-white/10 transition active:scale-95 shrink-0"
-            >
-              Start Audit
-            </Link>
+            {/* START AUDIT CTA (Hidden when on audit form page) */}
+            {!isAuditPage && (
+              <Link
+                to="/audit"
+                className="bg-white hover:bg-gray-100 text-black px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold hover:shadow-lg hover:shadow-white/10 transition active:scale-95 shrink-0"
+              >
+                Start Audit
+              </Link>
+            )}
           </div>
         </div>
       </nav>
