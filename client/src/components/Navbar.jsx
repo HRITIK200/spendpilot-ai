@@ -103,7 +103,7 @@ function Navbar() {
                   <LogOut size={13} />
                 </button>
               </div>
-            ) : (
+            ) : !isHomePage ? (
               <button
                 onClick={() => openAuthModal("login")}
                 className="text-gray-300 hover:text-white text-xs sm:text-sm font-medium px-2 sm:px-3 py-1.5 rounded-xl border border-white/10 hover:bg-white/10 transition flex items-center gap-1"
@@ -111,7 +111,7 @@ function Navbar() {
                 <LogIn size={13} />
                 <span>Sign In</span>
               </button>
-            )}
+            ) : null}
 
             {/* START AUDIT CTA (Hidden when on audit form page) */}
             {!isAuditPage && (
