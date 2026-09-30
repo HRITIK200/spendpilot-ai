@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
-import { ArrowLeft, X, FileSpreadsheet, AlertTriangle, CheckCircle2, XCircle, ArrowRight, Loader2, RefreshCw, Home as HomeIcon, Mail, Lock } from "lucide-react";
+import { ArrowLeft, X, FileSpreadsheet, AlertTriangle, CheckCircle2, XCircle, ArrowRight, Loader2, RefreshCw, Home as HomeIcon, Mail, Lock, Sliders, Sparkles } from "lucide-react";
 import { saveLead } from "../api/leadApi";
 import { getReportById } from "../api/reportApi";
 import Toast from "../components/Toast";
@@ -23,6 +23,7 @@ const Results = () => {
   const [leadNotice, setLeadNotice] = useState(null);
   const [toast, setToast] = useState(null);
   const [showEmailModal, setShowEmailModal] = useState(false);
+  const [simTrigger, setSimTrigger] = useState(null);
 
   const handleLeadSubmit = async () => {
     const trimmedEmail = email.trim();
@@ -142,6 +143,22 @@ const Results = () => {
 
   const [compareToolId, setCompareToolId] = useState(null);
 
+  const handleAutoResolveRedundancy = (redundantToolName) => {
+    setSimTrigger({ toolName: redundantToolName, timestamp: Date.now() });
+
+    setTimeout(() => {
+      const el = document.getElementById("what-if-simulator");
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 50);
+
+    setToast({
+      message: `Simulator updated: Toggled off ${redundantToolName} to preview consolidation savings!`,
+      type: "success"
+    });
+  };
+
   const getRedundancyAlerts = () => {
     if (!results || !results.auditedTools) return [];
     const alerts = [];
@@ -150,13 +167,19 @@ const Results = () => {
     // 1. Developer Tooling Overlap
     const codingTools = ["Cursor", "GitHub Copilot", "Windsurf"].filter((t) => toolsList.includes(t));
     if (codingTools.length >= 2) {
-      const seats = results.auditedTools.find((t) => t.tool === codingTools[0])?.seats || 1;
-      const savings = seats * 10;
+      const redundantTool = codingTools.includes("Cursor") 
+        ? codingTools.find((t) => t !== "Cursor") 
+        : codingTools[1];
+      const targetToolObj = results.auditedTools.find((t) => t.tool === redundantTool);
+      const savings = targetToolObj ? Number(targetToolObj.monthlyCost) : (targetToolObj?.seats || 1) * 19;
+
       alerts.push({
         type: "developer",
         title: "Developer Tooling Overlap Detected",
-        description: `We detected both ${codingTools.join(" and ")} configured. Consolidating your developer tooling onto Cursor can save an additional $${savings}/mo by eliminating duplicate subscriptions.`,
-        savings,
+        description: `We detected both ${codingTools.join(" and ")} active in your stack. Consolidating your developer tooling onto ${codingTools.includes("Cursor") ? "Cursor" : codingTools[0]} can eliminate duplicate subscriptions.`,
+        redundantTool: redundantTool,
+        primaryTool: codingTools.includes("Cursor") ? "Cursor" : codingTools[0],
+        savings: savings || 38,
       });
     }
 
@@ -164,13 +187,17 @@ const Results = () => {
     const chatTools = ["ChatGPT", "Claude"].filter((t) => toolsList.includes(t));
     const hasWritingCase = results.auditedTools.some((t) => chatTools.includes(t.tool) && t.useCase === "writing");
     if (chatTools.length >= 2 && hasWritingCase) {
-      const seats = results.auditedTools.find((t) => t.tool === "ChatGPT")?.seats || 1;
-      const savings = seats * 20;
+      const redundantTool = "Claude";
+      const targetToolObj = results.auditedTools.find((t) => t.tool === redundantTool);
+      const savings = targetToolObj ? Number(targetToolObj.monthlyCost) : (targetToolObj?.seats || 1) * 20;
+
       alerts.push({
         type: "chatbot",
         title: "Chat Workspace Redundancy",
-        description: `Both ChatGPT and Claude are active for content writing workflows. Standardizing on a single chatbot platform can reduce overlapping licensing costs by $${savings}/mo.`,
-        savings,
+        description: `Both ChatGPT and Claude are active for content writing workflows. Standardizing on a single chatbot platform can reduce overlapping licensing costs.`,
+        redundantTool: redundantTool,
+        primaryTool: "ChatGPT",
+        savings: savings || 40,
       });
     }
 
@@ -269,15 +296,28 @@ const Results = () => {
     
     // 2. Map audited tools to CSV rows
     const rows = results.auditedTools.map((tool) => [
-      `"${tool.tool}"`,
-      `"${tool.plan}"`,
-      tool.seats,
-      tool.monthlyCost,
-      `"${tool.optimizedPlan}"`,
-      tool.monthlySavings,
-      tool.annualSavings,
-      `"${tool.recommendation.replace(/"/g, '""')}"`,
-      `"${tool.reasoning.replace(/"/g, '""')}"`
+      `"${tool.tool || ""}"`,
+      `"${tool.plan || ""}"`,
+      tool.seats || 1,
+      tool.monthlyCost || 0,
+      `"${tool.optimizedPlan || ""}"`,
+      tool.monthlySavings || 0,
+      tool.annualSavings || 0,
+      `"${(tool.recommendation || "").replace(/"/g, '""')}"`,
+      `"${(tool.reasoning || "").replace(/"/g, '""')}"`
+    ]);
+
+    // Summary totals row
+    rows.push([
+      `"TOTAL AUDIT SUMMARY"`,
+      `""`,
+      results.auditedTools.reduce((acc, t) => acc + (Number(t.seats) || 1), 0),
+      results.auditedTools.reduce((acc, t) => acc + (Number(t.monthlyCost) || 0), 0),
+      `"Optimization Score: ${score}/100"`,
+      results.totalMonthlySavings || 0,
+      results.totalAnnualSavings || 0,
+      `"SpendPilot AI Automated Audit"`,
+      `""`
     ]);
 
     // 3. Assemble CSV string
@@ -291,11 +331,12 @@ const Results = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `spendpilot_audit_report_${results._id || "export"}.csv`);
+    link.setAttribute("download", `SpendPilot_Audit_Report_${results._id || "export"}.csv`);
     link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
     
     setToast({
       message: "Audit report exported to CSV successfully!",
@@ -306,16 +347,43 @@ const Results = () => {
 
   const [copied, setCopied] = useState(false);
 
-  const score = results?.optimizationScore || 100;
-  const radius = 35;
+  const score = results?.optimizationScore !== undefined ? results.optimizationScore : 100;
+  const radius = 38;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (score / 100) * circumference;
+  const strokeDashoffset = circumference - (Math.min(100, Math.max(0, score)) / 100) * circumference;
 
-  const getScoreColorClass = (val) => {
-    if (val >= 85) return "stroke-emerald-500 text-emerald-400";
-    if (val >= 70) return "stroke-yellow-500 text-yellow-400";
-    return "stroke-rose-500 text-rose-400";
+  const getScoreDetails = (val) => {
+    if (val >= 85) {
+      return {
+        label: "Optimal Efficiency",
+        badgeBg: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+        dotColor: "bg-emerald-400",
+        strokeClass: "stroke-emerald-400",
+        cardGradient: "from-emerald-500/10 via-emerald-600/5 to-transparent border-emerald-500/30",
+        textColor: "text-emerald-400",
+      };
+    }
+    if (val >= 70) {
+      return {
+        label: "Moderate Waste",
+        badgeBg: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+        dotColor: "bg-amber-400",
+        strokeClass: "stroke-amber-400",
+        cardGradient: "from-amber-500/10 via-amber-600/5 to-transparent border-amber-500/30",
+        textColor: "text-amber-400",
+      };
+    }
+    return {
+      label: "Critical Overspend",
+      badgeBg: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+      dotColor: "bg-rose-400",
+      strokeClass: "stroke-rose-400",
+      cardGradient: "from-rose-500/10 via-rose-600/5 to-transparent border-rose-500/30",
+      textColor: "text-rose-400",
+    };
   };
+
+  const scoreDetails = getScoreDetails(score);
 
   const chartData = 
   results?.auditedTools.map((tool) => ({
@@ -596,84 +664,88 @@ const Results = () => {
 
         {/* HERO STATS */}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
 
           {/* Monthly Savings */}
-
-          <div className="bg-gradient-to-br from-green-500/10 to-green-600/5 border border-green-500/20 rounded-3xl p-6 md:p-8">
-
-            <p className="text-green-400 mb-3 text-sm uppercase tracking-wide">
-              Monthly Savings
+          <div className="bg-gradient-to-br from-emerald-500/10 via-emerald-600/5 to-transparent border border-emerald-500/25 rounded-3xl p-5 sm:p-6 md:p-8 shadow-xl">
+            <p className="text-emerald-400 mb-2 sm:mb-3 text-xs sm:text-sm font-semibold uppercase tracking-wider">
+              Identified Monthly Savings
             </p>
 
-            <h2 className="text-4xl md:text-5xl font-bold mb-2">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mb-2 text-emerald-400">
               ${results.totalMonthlySavings}
             </h2>
 
-            <p className="text-gray-400">
-              Estimated monthly optimization
+            <p className="text-gray-400 text-xs sm:text-sm">
+              Potential direct recurring reduction
             </p>
           </div>
 
           {/* Annual Savings */}
-
-          <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border border-blue-500/20 rounded-3xl p-6 md:p-8">
-
-            <p className="text-blue-400 mb-3 text-sm uppercase tracking-wide">
-              Annual Savings
+          <div className="bg-gradient-to-br from-blue-500/10 via-blue-600/5 to-transparent border border-blue-500/25 rounded-3xl p-5 sm:p-6 md:p-8 shadow-xl">
+            <p className="text-blue-400 mb-2 sm:mb-3 text-xs sm:text-sm font-semibold uppercase tracking-wider">
+              Annual Run-Rate Savings
             </p>
 
-            <h2 className="text-4xl md:text-5xl font-bold mb-2">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mb-2 text-blue-400">
               ${results.totalAnnualSavings}
             </h2>
 
-            <p className="text-gray-400">
-              Estimated yearly reduction
+            <p className="text-gray-400 text-xs sm:text-sm">
+              Estimated yearly optimization
             </p>
           </div>
-          {/* Optimization Score */}
 
-          <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border border-purple-500/20 rounded-3xl p-6 md:p-8 flex items-center justify-between gap-4">
+          {/* Circular Radial Gauge Optimization Score Card */}
+          <div className={`bg-gradient-to-br ${scoreDetails.cardGradient} border rounded-3xl p-5 sm:p-6 md:p-8 flex items-center justify-between gap-4 shadow-xl`}>
             <div>
-              <p className="text-purple-400 mb-3 text-sm uppercase tracking-wide">
+              <p className="text-gray-400 mb-1.5 text-xs sm:text-sm font-semibold uppercase tracking-wider">
                 Optimization Score
               </p>
 
-              <h2 className="text-4xl md:text-5xl font-bold mb-2">
-                {score}/100
-              </h2>
+              <div className="flex items-baseline gap-1.5 mb-2">
+                <h2 className={`text-3xl sm:text-4xl md:text-5xl font-black ${scoreDetails.textColor}`}>
+                  {score}
+                </h2>
+                <span className="text-gray-500 text-sm font-semibold">/100</span>
+              </div>
 
-              <p className="text-gray-400">
-                AI infrastructure efficiency
-              </p>
+              {/* Dynamic Status Badge */}
+              <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${scoreDetails.badgeBg}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${scoreDetails.dotColor} animate-pulse`} />
+                <span>{scoreDetails.label}</span>
+              </div>
             </div>
             
-            <div className="relative w-20 h-20 flex-shrink-0">
-              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 80 80">
-                {/* Background Circle */}
+            {/* Circular Radial Progress Gauge */}
+            <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 flex items-center justify-center">
+              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 96 96">
+                {/* Background Ring */}
                 <circle
-                  cx="40"
-                  cy="40"
+                  cx="48"
+                  cy="48"
                   r={radius}
-                  className="stroke-gray-800"
-                  strokeWidth="6"
+                  className="stroke-gray-800/80"
+                  strokeWidth="7"
                   fill="transparent"
                 />
-                {/* Animated Foreground Circle */}
+                {/* Animated Value Ring */}
                 <circle
-                  cx="40"
-                  cy="40"
+                  cx="48"
+                  cy="48"
                   r={radius}
-                  className={`transition-all duration-1000 ease-out ${getScoreColorClass(score)}`}
-                  strokeWidth="6"
+                  className={`transition-all duration-1000 ease-out ${scoreDetails.strokeClass}`}
+                  strokeWidth="7"
                   fill="transparent"
                   strokeDasharray={circumference}
                   strokeDashoffset={strokeDashoffset}
                   strokeLinecap="round"
                 />
               </svg>
-              <div className="absolute inset-0 flex items-center justify-center text-sm font-extrabold text-white print:text-black">
-                {score}%
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-sm sm:text-base font-extrabold text-white print:text-black">
+                  {score}%
+                </span>
               </div>
             </div>
           </div>
@@ -825,6 +897,7 @@ const Results = () => {
           auditedTools={results.auditedTools}
           originalScore={score}
           originalMonthlySavings={results.totalMonthlySavings}
+          externalToggleTool={simTrigger}
         />
         
         {results.totalMonthlySavings < 100 && (
@@ -941,15 +1014,28 @@ const Results = () => {
             </h3>
             <div className="grid gap-4">
               {redundancyAlerts.map((alert, idx) => (
-                <div key={idx} className="bg-rose-950/10 border border-rose-500/20 p-5 rounded-3xl relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl">
+                <div key={idx} className="bg-rose-950/15 border border-rose-500/25 p-5 sm:p-6 rounded-3xl relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl">
                   <div className="absolute inset-0 bg-gradient-to-r from-rose-500/5 to-transparent pointer-events-none"></div>
                   <div>
-                    <h4 className="text-rose-455 font-bold text-sm mb-1">{alert.title}</h4>
-                    <p className="text-gray-300 text-xs leading-relaxed max-w-2xl">{alert.description}</p>
+                    <h4 className="text-rose-400 font-bold text-sm sm:text-base mb-1">{alert.title}</h4>
+                    <p className="text-gray-300 text-xs sm:text-sm leading-relaxed max-w-2xl">{alert.description}</p>
                   </div>
-                  <div className="flex-shrink-0 text-left md:text-right bg-rose-500/10 border border-rose-500/20 px-4 py-2.5 rounded-2xl">
-                    <p className="text-[9px] text-rose-300 font-semibold uppercase tracking-wider">Consolidation Savings</p>
-                    <p className="text-lg font-black text-rose-400">${alert.savings}/mo</p>
+                  <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 self-start md:self-auto shrink-0">
+                    <div className="text-left md:text-right bg-rose-500/10 border border-rose-500/20 px-3.5 py-2 rounded-2xl">
+                      <p className="text-[9px] text-rose-300 font-semibold uppercase tracking-wider">Consolidation Savings</p>
+                      <p className="text-base sm:text-lg font-black text-rose-400">${alert.savings}/mo</p>
+                    </div>
+                    {alert.redundantTool && (
+                      <button
+                        type="button"
+                        onClick={() => handleAutoResolveRedundancy(alert.redundantTool)}
+                        className="inline-flex items-center gap-2 bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-500/30 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition shadow-sm hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                        title={`Model cancelling ${alert.redundantTool} in the simulator`}
+                      >
+                        <Sliders size={14} className="text-rose-300" />
+                        <span>Auto-Resolve in Simulator</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}

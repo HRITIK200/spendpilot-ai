@@ -69,7 +69,12 @@ const getPlanRate = (toolName, planName, fallbackUnitCost) => {
   return fallbackUnitCost > 0 ? fallbackUnitCost : 20;
 };
 
-export default function WhatIfSimulator({ auditedTools = [], originalScore = 80, originalMonthlySavings = 0 }) {
+export default function WhatIfSimulator({
+  auditedTools = [],
+  originalScore = 80,
+  originalMonthlySavings = 0,
+  externalToggleTool = null,
+}) {
   // Baseline initial state from auditedTools
   const initialSimState = useMemo(() => {
     return auditedTools.map((tool) => {
@@ -98,6 +103,20 @@ export default function WhatIfSimulator({ auditedTools = [], originalScore = 80,
   React.useEffect(() => {
     setSimTools(initialSimState);
   }, [initialSimState]);
+
+  // Handle external triggers (e.g. Auto-Resolve in Redundancy Alerts)
+  React.useEffect(() => {
+    if (externalToggleTool?.toolName) {
+      const targetName = externalToggleTool.toolName.toLowerCase();
+      setSimTools((prev) =>
+        prev.map((t) =>
+          t.name.toLowerCase() === targetName || t.id === externalToggleTool.toolName
+            ? { ...t, enabled: false }
+            : t
+        )
+      );
+    }
+  }, [externalToggleTool]);
 
   const handleToggleTool = (id) => {
     setSimTools((prev) =>
@@ -171,7 +190,7 @@ export default function WhatIfSimulator({ auditedTools = [], originalScore = 80,
   }
 
   return (
-    <div className="bg-gradient-to-br from-gray-900/90 via-gray-900/70 to-blue-950/20 border border-blue-500/20 rounded-3xl p-5 sm:p-8 mb-12 shadow-2xl relative overflow-hidden no-print">
+    <div id="what-if-simulator" className="bg-gradient-to-br from-gray-900/90 via-gray-900/70 to-blue-950/20 border border-blue-500/20 rounded-3xl p-5 sm:p-8 mb-12 shadow-2xl relative overflow-hidden no-print scroll-mt-24">
       {/* Background ambient glow */}
       <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/10 blur-[100px] rounded-full pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-emerald-500/5 blur-[100px] rounded-full pointer-events-none" />
@@ -298,7 +317,7 @@ export default function WhatIfSimulator({ auditedTools = [], originalScore = 80,
               >
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                   {/* Left: Tool Name & Keep/Cancel toggle */}
-                  <div className="flex items-center gap-3 min-w-[200px]">
+                  <div className="flex items-center gap-3 min-w-0 sm:min-w-[200px]">
                     <button
                       type="button"
                       onClick={() => handleToggleTool(tool.id)}
