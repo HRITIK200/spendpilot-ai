@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Clock, X, Trash2, Cloud, User, LogOut, LogIn, Building, Sparkles, ArrowRight } from "lucide-react";
+import { Clock, X, Trash2, Cloud, User, LogOut, LogIn, Building, Sparkles, ArrowRight, Loader2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import AuthModal from "./AuthModal";
-import { getUserReports } from "../api/reportApi";
+import { getUserReports, deleteReport } from "../api/reportApi";
 import { DEMO_AUDITS } from "../data/demoAudits";
 
 function Navbar() {
@@ -13,8 +13,10 @@ function Navbar() {
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [history, setHistory] = useState([]);
+  const [demoAuditsList, setDemoAuditsList] = useState(DEMO_AUDITS);
   const [activeTab, setActiveTab] = useState("my"); // "my" or "demo"
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   const { user, isAuthenticated, logout, openAuthModal } = useAuth();
 
   useEffect(() => {
@@ -40,7 +42,48 @@ function Navbar() {
     }
   }, [isDrawerOpen, isAuthenticated]);
 
-  const displayedList = activeTab === "my" ? history : DEMO_AUDITS;
+  const handleDeleteReport = async (reportId) => {
+    if (!window.confirm("Are you sure you want to delete this audit report?")) {
+      return;
+    }
+
+    setDeletingId(reportId);
+
+    // If deleting from demo tab, remove from current session demo list
+    if (activeTab === "demo") {
+      setDemoAuditsList((prev) => prev.filter((d) => d._id !== reportId));
+      setDeletingId(null);
+      return;
+    }
+
+    // If authenticated and non-local report, delete from server
+    if (isAuthenticated && !String(reportId).startsWith("demo-") && !String(reportId).startsWith("local-")) {
+      try {
+        await deleteReport(reportId);
+      } catch (err) {
+        console.error("Failed to delete cloud report:", err);
+      }
+    }
+
+    // Always update local history state and localStorage
+    setHistory((prev) => {
+      const updated = prev.filter((h) => h._id !== reportId);
+      localStorage.setItem("spendpilot_history", JSON.stringify(updated));
+      return updated;
+    });
+
+    // If stored auditResults was this deleted report, remove it
+    try {
+      const currentStored = JSON.parse(localStorage.getItem("auditResults") || "{}");
+      if (currentStored._id === reportId) {
+        localStorage.removeItem("auditResults");
+      }
+    } catch (e) {}
+
+    setDeletingId(null);
+  };
+
+  const displayedList = activeTab === "my" ? history : demoAuditsList;
 
   return (
     <>
@@ -290,33 +333,35 @@ function Navbar() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 mt-1">
+                  <div className="flex items-center gap-2 mt-2 pt-2 border-t border-white/5">
                     <button
+                      type="button"
                       onClick={() => {
                         localStorage.setItem("auditResults", JSON.stringify(audit));
                         setIsDrawerOpen(false);
                         window.location.href = "/results";
                       }}
-                      className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold py-2 px-3 rounded-xl transition text-center shadow-md flex items-center justify-center gap-1"
+                      className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold py-2 px-3 rounded-xl transition text-center shadow-md flex items-center justify-center gap-1.5 active:scale-[0.98] cursor-pointer"
                     >
                       <span>View Report</span>
                       <ArrowRight size={13} />
                     </button>
 
-                    {!isAuthenticated && !audit.isDemo && (
-                      <button
-                        onClick={() => {
-                          const updated = history.filter((h) => h._id !== audit._id);
-                          localStorage.setItem("spendpilot_history", JSON.stringify(updated));
-                          setHistory(updated);
-                        }}
-                        className="text-gray-500 hover:text-rose-400 border border-white/10 hover:border-rose-500/20 p-2 rounded-xl transition"
-                        title="Delete local record"
-                        aria-label="Delete local audit"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteReport(audit._id)}
+                      disabled={deletingId === audit._id}
+                      className="inline-flex items-center justify-center gap-1.5 text-gray-400 hover:text-rose-400 hover:bg-rose-500/10 border border-white/10 hover:border-rose-500/30 py-2 px-3 rounded-xl transition text-xs font-semibold shrink-0 cursor-pointer active:scale-[0.98] disabled:opacity-50"
+                      title="Delete this audit report"
+                      aria-label="Delete audit report"
+                    >
+                      {deletingId === audit._id ? (
+                        <Loader2 size={13} className="animate-spin text-rose-400" />
+                      ) : (
+                        <Trash2 size={13} className="text-gray-400 group-hover:text-rose-400" />
+                      )}
+                      <span>Delete</span>
+                    </button>
                   </div>
                 </div>
               );

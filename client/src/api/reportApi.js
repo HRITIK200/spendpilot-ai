@@ -29,3 +29,10 @@ export const sendReportEmail = async (reportId, payload) => {
   const response = await axios.post(getEndpoint(`/${reportId}/email`), payload);
   return response.data;
 };
+
+export const deleteReport = async (id) => {
+  const token = localStorage.getItem("spendpilot_token");
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  const response = await axios.delete(getEndpoint(`/${id}`), { headers });
+  return response.data;
+};

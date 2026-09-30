@@ -73,6 +73,27 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+// 4. DELETE REPORT (Authenticated Owner)
+router.delete("/:id", verifyToken, async (req, res) => {
+  try {
+    const report = await Report.findById(req.params.id);
+    if (!report) {
+      return res.status(404).json({ message: "Report not found." });
+    }
+
+    // Verify ownership: report must belong to the requesting user
+    if (report.userId && String(report.userId) !== String(req.user.id)) {
+      return res.status(403).json({ message: "Not authorized to delete this report." });
+    }
+
+    await Report.findByIdAndDelete(req.params.id);
+    res.json({ message: "Audit report deleted successfully." });
+  } catch (error) {
+    console.error("Failed to delete report:", error);
+    res.status(500).json({ message: "Failed to delete report." });
+  }
+});
+
 const emailSchema = z.object({
   recipientEmail: z.string().email("A valid recipient email is required").trim().toLowerCase(),
   senderName: z.string().optional().default("FinOps Lead"),
