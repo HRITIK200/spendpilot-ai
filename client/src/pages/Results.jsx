@@ -834,10 +834,17 @@ const Results = () => {
               </p>
             </div>
 
-            <div className="h-[280px] print-chart-container">
+            <div className="h-[300px] print-chart-container">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
-                  <XAxis dataKey="name" tick={{ fill: "#9ca3af", fontSize: 10 }} />
+                <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 25 }}>
+                  <XAxis 
+                    dataKey="name" 
+                    tick={{ fill: "#9ca3af", fontSize: 9 }} 
+                    interval={0}
+                    angle={-20}
+                    textAnchor="end"
+                    height={50}
+                  />
                   <YAxis tick={{ fill: "#9ca3af", fontSize: 10 }} />
                   <Tooltip content={<CustomTooltip />} /> 
                   <Legend wrapperStyle={{ fontSize: 11 }} /> 
@@ -940,7 +947,7 @@ const Results = () => {
         {/* AI SUMMARY */}
 
         <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 
-                           border border-white/10 rounded-3xl p-8 mb-12">
+                           border border-white/10 rounded-3xl p-5 sm:p-7 md:p-8 mb-12">
 
         {/* HEADER */}
         <div className="flex items-center gap-3 mb-6">
@@ -979,7 +986,7 @@ const Results = () => {
              <p className="text-gray-400 text-sm mb-2">
                 Infrastructure Status
              </p>
-             <h3 className="text-2xl font-bold">
+             <h3 className="text-lg sm:text-2xl font-bold">
                 Moderate Optimization Needed
              </h3>
           </div>
@@ -988,7 +995,7 @@ const Results = () => {
               <p className="text-gray-400 text-sm mb-2">
                 Potential Savings
               </p>
-              <h3 className="text-2xl font-bold text-green-400">
+              <h3 className="text-lg sm:text-2xl font-bold text-green-400">
                 ${results.totalAnnualSavings}/yr
               </h3>
           </div>
@@ -997,7 +1004,7 @@ const Results = () => {
               <p className="text-gray-400 text-sm mb-2">
                 Optimization Score
               </p>
-              <h3 className="text-2xl font-bold text-purple-400">
+              <h3 className="text-lg sm:text-2xl font-bold text-purple-400">
                 {results.optimizationScore}/100
               </h3>
           </div>
@@ -1340,14 +1347,14 @@ const Results = () => {
                       key={idx}
                       onClick={() => setSelectedDate(date)}
                       type="button"
-                      className={`flex flex-col items-center justify-center p-2.5 rounded-xl border transition hover:scale-[1.02] active:scale-[0.98] ${
+                      className={`flex flex-col items-center justify-center p-1.5 sm:p-2.5 rounded-xl border transition hover:scale-[1.02] active:scale-[0.98] ${
                         isSelected 
                           ? "border-blue-500 bg-blue-500/10 text-blue-400 font-extrabold" 
                           : "border-gray-800 bg-gray-950/40 text-gray-400 hover:border-gray-750 font-semibold"
                       }`}
                     >
-                      <span className="text-[9px] uppercase">{dayStr}</span>
-                      <span className="text-sm mt-0.5">{dateNum}</span>
+                      <span className="text-[8px] sm:text-[9px] uppercase">{dayStr}</span>
+                      <span className="text-xs sm:text-sm mt-0.5">{dateNum}</span>
                     </button>
                   );
                 })}
@@ -1365,7 +1372,7 @@ const Results = () => {
                       key={idx}
                       onClick={() => setSelectedTime(time)}
                       type="button"
-                      className={`py-2.5 px-3 rounded-xl border text-xs font-semibold transition hover:scale-[1.02] active:scale-[0.98] ${
+                      className={`py-2 sm:py-2.5 px-2 sm:px-3 rounded-xl border text-[11px] sm:text-xs font-semibold transition hover:scale-[1.02] active:scale-[0.98] ${
                         isSelected 
                           ? "border-blue-500 bg-blue-500/10 text-blue-400" 
                           : "border-gray-800 bg-gray-950/40 text-gray-400 hover:border-gray-750"

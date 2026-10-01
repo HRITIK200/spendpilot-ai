@@ -379,29 +379,29 @@ const AuditForm = () => {
         </div>
 
         {/* LIVE SPEND SUB-TOTAL BAR */}
-        <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#0d1527] to-[#090e1a] border border-blue-500/20 shadow-xl">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-center sm:text-left divide-y sm:divide-y-0 sm:divide-x divide-white/5">
-            <div>
+        <div className="mb-6 p-3.5 sm:p-5 rounded-2xl bg-gradient-to-r from-[#0d1527] to-[#090e1a] border border-blue-500/20 shadow-xl">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
+            <div className="bg-black/30 border border-white/5 rounded-xl p-3 sm:p-3.5 text-center sm:text-left">
               <p className="text-[10px] uppercase font-semibold text-gray-400 tracking-wider">Configured Tools</p>
-              <p className="text-lg sm:text-2xl font-bold text-white mt-0.5 font-mono">
+              <p className="text-base sm:text-2xl font-bold text-white mt-0.5 font-mono">
                 {totalConfiguredTools} <span className="text-xs text-gray-400 font-normal">tools</span>
               </p>
             </div>
-            <div className="pt-2 sm:pt-0 sm:pl-4">
+            <div className="bg-black/30 border border-white/5 rounded-xl p-3 sm:p-3.5 text-center sm:text-left">
               <p className="text-[10px] uppercase font-semibold text-gray-400 tracking-wider">Total Seats</p>
-              <p className="text-lg sm:text-2xl font-bold text-white mt-0.5 font-mono">
+              <p className="text-base sm:text-2xl font-bold text-white mt-0.5 font-mono">
                 {totalConfiguredSeats} <span className="text-xs text-gray-400 font-normal">seats</span>
               </p>
             </div>
-            <div className="pt-2 sm:pt-0 sm:pl-4">
-              <p className="text-[10px] uppercase font-semibold text-emerald-400 tracking-wider">Current Monthly Spend</p>
-              <p className="text-lg sm:text-2xl font-extrabold text-emerald-400 mt-0.5 font-mono">
+            <div className="bg-emerald-950/20 border border-emerald-500/20 rounded-xl p-3 sm:p-3.5 text-center sm:text-left">
+              <p className="text-[10px] uppercase font-semibold text-emerald-400 tracking-wider">Monthly Spend</p>
+              <p className="text-base sm:text-2xl font-extrabold text-emerald-400 mt-0.5 font-mono">
                 ${totalMonthlySpend.toLocaleString()}<span className="text-xs text-emerald-400/80 font-normal">/mo</span>
               </p>
             </div>
-            <div className="pt-2 sm:pt-0 sm:pl-4">
+            <div className="bg-blue-950/20 border border-blue-500/20 rounded-xl p-3 sm:p-3.5 text-center sm:text-left">
               <p className="text-[10px] uppercase font-semibold text-blue-400 tracking-wider">Annual Run Rate</p>
-              <p className="text-lg sm:text-2xl font-extrabold text-blue-400 mt-0.5 font-mono">
+              <p className="text-base sm:text-2xl font-extrabold text-blue-400 mt-0.5 font-mono">
                 ${totalAnnualSpend.toLocaleString()}<span className="text-xs text-blue-400/80 font-normal">/yr</span>
               </p>
             </div>
@@ -485,13 +485,13 @@ const AuditForm = () => {
                           key={t.tool}
                           type="button"
                           onClick={() => handleChange(tool.id, "tool", t.tool)}
-                          className={`px-2.5 sm:px-3 py-2.5 sm:py-3 rounded-xl border text-[11px] sm:text-xs font-semibold transition-all duration-200 flex items-center justify-start gap-2 hover:scale-[1.02] active:scale-[0.98] ${
+                          className={`min-w-0 px-2 sm:px-3 py-2 sm:py-3 rounded-xl border text-[11px] sm:text-xs font-semibold transition-all duration-200 flex items-center justify-start gap-1.5 sm:gap-2 hover:scale-[1.02] active:scale-[0.98] ${
                             isSelected
                               ? `${activeStyle} border-2 shadow-lg`
                               : "border-gray-800 bg-gray-800/20 text-gray-400 hover:border-gray-700 hover:text-gray-300"
                           }`}
                         >
-                          <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                          <span className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full flex-shrink-0 ${
                             t.tool === "ChatGPT" ? "bg-emerald-500" :
                             t.tool === "Claude" ? "bg-orange-500" :
                             t.tool === "Cursor" ? "bg-blue-500" :
@@ -501,7 +501,7 @@ const AuditForm = () => {
                             t.tool === "Anthropic API" ? "bg-amber-500" :
                             "bg-cyan-500"
                           }`} />
-                          {t.tool}
+                          <span className="truncate">{t.tool}</span>
                         </button>
                       );
                     })}
@@ -644,7 +644,7 @@ const AuditForm = () => {
               type="button"
               onClick={handleGenerateReport}
               disabled={loading}
-              className={`w-full sm:w-auto font-bold px-8 py-4 rounded-2xl text-sm sm:text-base shadow-xl transition active:scale-95 flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
+              className={`w-full sm:w-auto font-bold px-4 sm:px-8 py-3.5 sm:py-4 rounded-2xl text-xs sm:text-base shadow-xl transition active:scale-95 flex items-center justify-center gap-2 sm:gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
                 isAuthenticated
                   ? "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-emerald-500/20"
                   : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-blue-500/25"

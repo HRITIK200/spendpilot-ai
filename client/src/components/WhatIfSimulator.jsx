@@ -209,7 +209,7 @@ export default function WhatIfSimulator({
               </span>
             )}
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2.5">
+          <h2 className="text-xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2.5">
             <Sliders className="text-blue-400" size={24} />
             "What-If" Scenario Simulator
           </h2>
@@ -230,7 +230,7 @@ export default function WhatIfSimulator({
       </div>
 
       {/* LIVE SIMULATOR METRICS BANNER */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 my-6 relative z-10">
+      <div className="grid grid-cols-1 min-[440px]:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 my-6 relative z-10">
         <div className="bg-black/40 border border-white/10 rounded-2xl p-4">
           <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Simulated Spend</p>
           <div className="text-xl sm:text-2xl font-black text-white mt-1">

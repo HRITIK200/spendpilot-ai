@@ -73,7 +73,7 @@ function Hero() {
         </div>
 
         {/* Hero Heading */}
-        <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold leading-tight tracking-tight text-white">
+        <h1 className="text-3xl sm:text-6xl md:text-7xl font-extrabold leading-tight tracking-tight text-white">
           Stop Overspending
           <br />
           <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-cyan-300 bg-clip-text text-transparent">
@@ -81,7 +81,7 @@ function Hero() {
           </span>
         </h1>
 
-        <p className="text-gray-400 text-base sm:text-xl mt-5 sm:mt-6 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-gray-400 text-sm sm:text-xl mt-5 sm:mt-6 max-w-2xl mx-auto leading-relaxed">
           Audit your ChatGPT, Claude, Cursor, Copilot, and API commitments instantly.
           Right-size license tiers and eliminate duplicate seats in under 60 seconds.
         </p>
@@ -90,7 +90,7 @@ function Hero() {
         <div className="flex items-center justify-center gap-3 sm:gap-4 mt-8 sm:mt-10 flex-wrap">
           <Link
             to="/audit"
-            className="bg-white hover:bg-gray-100 text-black px-7 sm:px-9 py-3.5 sm:py-4 rounded-2xl font-bold text-sm sm:text-base hover:scale-105 transition duration-200 shadow-xl shadow-white/10 inline-flex items-center gap-2 group cursor-pointer"
+            className="w-full sm:w-auto bg-white hover:bg-gray-100 text-black px-6 sm:px-9 py-3.5 sm:py-4 rounded-2xl font-bold text-sm sm:text-base hover:scale-105 transition duration-200 shadow-xl shadow-white/10 inline-flex items-center justify-center gap-2 group cursor-pointer"
           >
             <span>Run 60-Second Free Audit</span>
             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
@@ -98,8 +98,8 @@ function Hero() {
         </div>
 
         {/* Interactive ROI Calculator Widget */}
-        <div className="max-w-2xl mx-auto mt-12 sm:mt-16 p-5 sm:p-7 md:p-8 bg-gradient-to-b from-white/[0.07] to-white/[0.02] border border-white/10 rounded-3xl backdrop-blur-xl shadow-2xl relative group hover:border-white/20 transition-all duration-300">
-          <div className="absolute -top-3.5 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-600 to-indigo-600 text-[11px] font-bold px-4 py-1.5 rounded-full text-white uppercase tracking-wider shadow-lg flex items-center gap-1.5">
+        <div className="max-w-2xl mx-auto mt-12 sm:mt-16 p-4 sm:p-7 md:p-8 bg-gradient-to-b from-white/[0.07] to-white/[0.02] border border-white/10 rounded-3xl backdrop-blur-xl shadow-2xl relative group hover:border-white/20 transition-all duration-300">
+          <div className="absolute -top-3.5 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-600 to-indigo-600 text-[11px] font-bold px-4 py-1.5 rounded-full text-white uppercase tracking-wider shadow-lg flex items-center gap-1.5 shrink-0 whitespace-nowrap">
             <Zap size={13} />
             <span>Interactive ROI Calculator</span>
           </div>
@@ -132,9 +132,9 @@ function Hero() {
               />
 
               {/* Quick Presets */}
-              <div className="flex items-center justify-between mt-3 text-[11px] text-gray-400">
+              <div className="flex flex-wrap items-center justify-between gap-2 mt-3 text-[11px] text-gray-400">
                 <span className="text-gray-500 font-medium">Quick Presets:</span>
-                <div className="flex items-center gap-1.5">
+                <div className="flex flex-wrap items-center gap-1.5">
                   {presetSeats.map((num) => (
                     <button
                       key={num}
