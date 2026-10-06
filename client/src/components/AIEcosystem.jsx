@@ -70,7 +70,7 @@ const AI_TOOLS = [
 
 function AIEcosystem() {
   return (
-    <section className="py-14 sm:py-20 px-4 sm:px-6 relative overflow-hidden border-t border-b border-white/5 bg-[#050811]/60">
+    <section id="ecosystem" className="py-14 sm:py-20 px-4 sm:px-6 relative overflow-hidden border-t border-b border-white/5 bg-[#050811]/60">
       {/* Background glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-blue-600/5 blur-[140px] pointer-events-none rounded-full" />
 
