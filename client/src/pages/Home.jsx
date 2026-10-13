@@ -1,5 +1,6 @@
 import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
+import RepoScanner from "../components/RepoScanner";
 import AIEcosystem from "../components/AIEcosystem";
 import Features from "../components/Features";
 import FAQ from "../components/FAQ";
@@ -21,6 +22,7 @@ function Home() {
     <div className="bg-[#030712] min-h-screen text-white flex flex-col justify-between">
       <Navbar />
       <Hero />
+      <RepoScanner />
       <AIEcosystem />
       <Features />
       <FAQ />

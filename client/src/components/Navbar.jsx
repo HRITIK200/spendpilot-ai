@@ -100,6 +100,10 @@ function Navbar() {
             {/* FEATURES & FAQ (Visible ONLY on home page) */}
             {isHomePage && (
               <>
+                <a href="#repo-scanner" className="hidden md:inline-block text-gray-300 hover:text-white text-sm transition">
+                  Repo Scanner
+                </a>
+
                 <a href="#features" className="hidden md:inline-block text-gray-300 hover:text-white text-sm transition">
                   Features
                 </a>

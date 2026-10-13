@@ -158,6 +158,12 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <a href="#repo-scanner" className="hover:text-blue-400 transition flex items-center gap-1.5">
+                  <span className="w-1 h-1 rounded-full bg-blue-400" />
+                  GitHub Repo AI Scanner
+                </a>
+              </li>
+              <li>
                 <a href="#features" className="hover:text-blue-400 transition flex items-center gap-1.5">
                   <span className="w-1 h-1 rounded-full bg-blue-400" />
                   What-If Scenario Simulator

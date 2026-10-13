@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import { toolData } from "../data/toolData";
 import { saveReport } from "../api/reportApi";
 import Tooltip from "../components/Tooltip";
 import Navbar from "../components/Navbar";
 import Toast from "../components/Toast";
-import { Lock, Sparkles, Terminal, Rocket, Building2, RotateCcw, DollarSign, Users, Layers, ArrowRight, Plus, Trash2, CheckCircle2 } from "lucide-react";
+import RepoScanner from "../components/RepoScanner";
+import { Lock, Sparkles, Terminal, Rocket, Building2, RotateCcw, DollarSign, Users, Layers, ArrowRight, Plus, Trash2, CheckCircle2, GitBranch, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 const AuditForm = () => {
@@ -15,10 +16,12 @@ const AuditForm = () => {
   }, []);
 
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated, openAuthModal } = useAuth();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [toast, setToast] = useState(null);
+  const [isRepoScannerModalOpen, setIsRepoScannerModalOpen] = useState(false);
 
   const [tools, setTools] = useState(() => {
     const savedTools = localStorage.getItem("auditTools");
@@ -39,6 +42,18 @@ const AuditForm = () => {
   useEffect(() => {
     localStorage.setItem("auditTools", JSON.stringify(tools));
   }, [tools]);
+
+  useEffect(() => {
+    if (location.state?.prefilledTools && location.state.prefilledTools.length > 0) {
+      setTools(location.state.prefilledTools);
+      const repoTag = location.state.repoName ? ` from ${location.state.repoName}` : "";
+      setToast({
+        message: `Imported ${location.state.prefilledTools.length} tools${repoTag} into audit form!`,
+        type: "success",
+      });
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   // Live real-time cost and seat computations
   const totalConfiguredTools = tools.filter((t) => t.tool).length;
@@ -333,7 +348,7 @@ const AuditForm = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
             <button
               type="button"
               onClick={() => handleLoadPreset("engineering")}
@@ -373,6 +388,23 @@ const AuditForm = () => {
               <div>
                 <p className="text-xs font-bold text-white group-hover:text-emerald-300 transition">Enterprise Stack</p>
                 <p className="text-[10px] text-gray-400 mt-0.5">ChatGPT Ent + Claude Ent + OpenAI API (60 seats)</p>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsRepoScannerModalOpen(true)}
+              className="p-3 rounded-xl border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 hover:border-indigo-500/50 text-left transition flex items-center gap-3 group cursor-pointer"
+            >
+              <div className="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-300 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <GitBranch size={16} />
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-xs font-bold text-white group-hover:text-indigo-300 transition">Scan GitHub Repo</p>
+                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-indigo-400/20 text-indigo-300 font-semibold border border-indigo-400/30">Auto</span>
+                </div>
+                <p className="text-[10px] text-gray-400 mt-0.5">Detect dependencies & models</p>
               </div>
             </button>
           </div>
@@ -686,6 +718,44 @@ const AuditForm = () => {
         </div>
       </div>
     </div>
+
+    {isRepoScannerModalOpen && (
+      <div 
+        className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md overflow-y-auto animate-fadeIn"
+        onClick={() => setIsRepoScannerModalOpen(false)}
+      >
+        <div 
+          className="bg-[#040814] border border-white/15 rounded-3xl max-w-4xl w-full p-4 sm:p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto my-8"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
+            <div className="flex items-center gap-2">
+              <GitBranch className="text-indigo-400" size={18} />
+              <h3 className="text-base sm:text-lg font-bold text-white">
+                Scan GitHub Repository for AI Tooling
+              </h3>
+            </div>
+            <button
+              onClick={() => setIsRepoScannerModalOpen(false)}
+              className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white border border-white/10 transition cursor-pointer"
+            >
+              <X size={16} />
+            </button>
+          </div>
+
+          <RepoScanner 
+            onExportToAudit={(scannedTools) => {
+              setTools(scannedTools);
+              setIsRepoScannerModalOpen(false);
+              setToast({
+                message: `Successfully imported ${scannedTools.length} tools from repository scan!`,
+                type: "success",
+              });
+            }} 
+          />
+        </div>
+      </div>
+    )}
 
     {toast && (
       <Toast
