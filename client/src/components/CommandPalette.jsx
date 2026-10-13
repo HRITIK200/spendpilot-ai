@@ -350,7 +350,7 @@ export default function CommandPalette({ isOpen, onClose }) {
               <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-gray-400 font-mono text-[10px]">↵</kbd> to select
             </span>
           </div>
-          <span className="text-[10px] text-gray-500">SpendPilot AI Command Menu</span>
+          <span className="text-[10px] text-gray-500 hidden sm:inline">SpendPilot AI Command Menu</span>
         </div>
       </div>
     </div>

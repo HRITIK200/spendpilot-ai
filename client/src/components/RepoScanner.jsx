@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { scanGitHubRepository, DEMO_REPOSITORIES } from "../utils/repoScanner";
 
-export default function RepoScanner({ onExportToAudit }) {
+export default function RepoScanner({ onExportToAudit, isModal = false }) {
   const navigate = useNavigate();
   const [repoInput, setRepoInput] = useState("");
   const [scanning, setScanning] = useState(false);
@@ -86,26 +86,38 @@ export default function RepoScanner({ onExportToAudit }) {
   };
 
   return (
-    <section id="repo-scanner" className="py-16 sm:py-24 px-4 sm:px-6 relative overflow-hidden bg-[#040814] border-t border-b border-white/5 no-print">
+    <section 
+      id={!isModal ? "repo-scanner" : undefined} 
+      className={isModal 
+        ? "p-0 relative w-full" 
+        : "py-16 sm:py-24 px-4 sm:px-6 relative overflow-hidden bg-[#040814] border-t border-b border-white/5 no-print"
+      }
+    >
       {/* Background glow accents */}
-      <div className="absolute top-1/2 left-1/3 -translate-y-1/2 w-96 h-96 bg-blue-600/10 blur-[140px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-purple-600/10 blur-[130px] rounded-full pointer-events-none" />
+      {!isModal && (
+        <>
+          <div className="absolute top-1/2 left-1/3 -translate-y-1/2 w-96 h-96 bg-blue-600/10 blur-[140px] rounded-full pointer-events-none" />
+          <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-purple-600/10 blur-[130px] rounded-full pointer-events-none" />
+        </>
+      )}
 
-      <div className="max-w-6xl mx-auto relative z-10">
+      <div className={isModal ? "w-full relative z-10" : "max-w-6xl mx-auto relative z-10"}>
         
         {/* SECTION HEADER */}
-        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-14">
-          <div className="inline-flex items-center gap-2 border border-blue-500/20 bg-blue-500/10 px-3.5 py-1.5 rounded-full text-xs font-semibold text-blue-300 uppercase tracking-wider mb-4">
-            <Sparkles size={14} className="text-blue-400" />
-            Instant Developer FinOps Intelligence
+        {!isModal && (
+          <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-14">
+            <div className="inline-flex items-center gap-2 border border-blue-500/20 bg-blue-500/10 px-3.5 py-1.5 rounded-full text-xs font-semibold text-blue-300 uppercase tracking-wider mb-4">
+              <Sparkles size={14} className="text-blue-400" />
+              Instant Developer FinOps Intelligence
+            </div>
+            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
+              Audit Any GitHub Repository
+            </h2>
+            <p className="text-gray-400 mt-3 text-sm sm:text-base md:text-lg leading-relaxed">
+              Paste any public GitHub repository URL. SpendPilot AI parses dependencies, detects AI models & dev tooling, and projects instant cost optimization.
+            </p>
           </div>
-          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
-            Audit Any GitHub Repository
-          </h2>
-          <p className="text-gray-400 mt-3 text-sm sm:text-base md:text-lg leading-relaxed">
-            Paste any public GitHub repository URL. SpendPilot AI parses dependencies, detects AI models & dev tooling, and projects instant cost optimization.
-          </p>
-        </div>
+        )}
 
         {/* REPO URL INPUT BAR */}
         <div className="max-w-3xl mx-auto bg-black/50 border border-white/10 rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-2xl backdrop-blur-xl">
@@ -220,14 +232,14 @@ export default function RepoScanner({ onExportToAudit }) {
                     </span>
                   )}
                 </div>
-                <h3 className="text-xl sm:text-2xl font-extrabold text-white mt-1.5 flex items-center gap-2">
-                  <span>{scanResult.repository.owner}/{scanResult.repository.repo}</span>
+                <h3 className="text-xl sm:text-2xl font-extrabold text-white mt-1.5 flex items-center gap-2 flex-wrap">
+                  <span className="break-all sm:break-normal">{scanResult.repository.owner}/{scanResult.repository.repo}</span>
                   {scanResult.repository.html_url && (
                     <a 
                       href={scanResult.repository.html_url} 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="text-gray-400 hover:text-white transition"
+                      className="text-gray-400 hover:text-white transition shrink-0"
                     >
                       <ExternalLink size={16} />
                     </a>
@@ -240,14 +252,14 @@ export default function RepoScanner({ onExportToAudit }) {
                 )}
               </div>
 
-              <div className="flex items-center gap-2 self-stretch sm:self-auto">
+              <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 self-stretch sm:self-auto w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => {
                     setScanResult(null);
                     setRepoInput("");
                   }}
-                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/10 text-xs font-medium transition"
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white border border-white/10 text-xs font-medium transition"
                 >
                   <RotateCcw size={13} />
                   <span>Reset</span>
@@ -256,7 +268,7 @@ export default function RepoScanner({ onExportToAudit }) {
                 <button
                   type="button"
                   onClick={handleProceedToAudit}
-                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold shadow-lg shadow-blue-500/25 transition active:scale-95"
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold shadow-lg shadow-blue-500/25 transition active:scale-95"
                 >
                   <span>Auto-Fill Audit Form</span>
                   <ArrowRight size={15} />

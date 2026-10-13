@@ -789,6 +789,7 @@ const AuditForm = () => {
           </div>
 
           <RepoScanner 
+            isModal={true}
             onExportToAudit={(scannedTools) => {
               setTools(scannedTools);
               setIsRepoScannerModalOpen(false);
