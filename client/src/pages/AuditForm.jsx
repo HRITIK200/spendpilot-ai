@@ -647,6 +647,51 @@ const AuditForm = () => {
                     )}
                   </div>
 
+                  {/* Active Utilization (%) & Ghost Seats */}
+                  <div className="md:col-span-2 pt-3 border-t border-white/5">
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-xs text-gray-300 font-medium flex items-center gap-1.5">
+                        <span>Active Seat Utilization:</span>
+                        <strong className={`${(tool.utilization ?? 100) < 100 ? "text-amber-400" : "text-emerald-400"}`}>
+                          {tool.utilization ?? 100}%
+                        </strong>
+                        <Tooltip content="Estimated percentage of assigned seats actively logged in daily. Under-utilization identifies idle 'Ghost Seats' wasting budget." />
+                      </label>
+                      {(tool.utilization ?? 100) < 100 && (
+                        <span className="text-[11px] text-amber-400 bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded-full font-semibold">
+                          {Math.max(1, Math.round((Number(tool.seats) || 1) * (1 - (tool.utilization ?? 100) / 100)))} Ghost Seats Detected
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="range"
+                        min="30"
+                        max="100"
+                        step="5"
+                        value={tool.utilization ?? 100}
+                        onChange={(e) => handleChange(tool.id, "utilization", Number(e.target.value))}
+                        className="w-full accent-blue-500 h-1.5 bg-gray-800 rounded-lg cursor-pointer"
+                      />
+                      <div className="flex gap-1 shrink-0">
+                        {[100, 80, 60].map((pct) => (
+                          <button
+                            key={pct}
+                            type="button"
+                            onClick={() => handleChange(tool.id, "utilization", pct)}
+                            className={`text-[10px] px-2 py-0.5 rounded-md border transition cursor-pointer ${
+                              (tool.utilization ?? 100) === pct
+                                ? "bg-blue-500/20 text-blue-400 border-blue-500/30 font-bold"
+                                : "bg-white/5 text-gray-400 border-white/5 hover:text-white"
+                            }`}
+                          >
+                            {pct}%
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
               </div>
             </div>
           );

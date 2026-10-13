@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Clock, X, Trash2, Cloud, User, LogOut, LogIn, Building, Sparkles, ArrowRight, Loader2 } from "lucide-react";
+import { Clock, X, Trash2, Cloud, User, LogOut, LogIn, Building, Sparkles, ArrowRight, Loader2, Search } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import AuthModal from "./AuthModal";
 import { getUserReports, deleteReport } from "../api/reportApi";
@@ -97,18 +97,31 @@ function Navbar() {
 
           {/* NAV CONTROLS */}
           <div className="flex items-center gap-1.5 xs:gap-2.5 sm:gap-4 md:gap-6">
+            {/* SEARCH / CMD+K PALETTE TRIGGER */}
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent("open-command-palette"))}
+              className="inline-flex items-center gap-1.5 xs:gap-2 px-2 sm:px-2.5 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-gray-300 hover:text-white transition text-xs cursor-pointer"
+              title="Search tools & actions (Ctrl+K)"
+            >
+              <Search size={13} className="text-blue-400 shrink-0" />
+              <span className="hidden md:inline text-gray-300">Search</span>
+              <kbd className="text-[10px] px-1 py-0.2 rounded bg-white/10 border border-white/10 text-gray-400 font-mono hidden xs:inline">
+                Ctrl K
+              </kbd>
+            </button>
+
             {/* FEATURES & FAQ (Visible ONLY on home page) */}
             {isHomePage && (
               <>
-                <a href="#repo-scanner" className="hidden md:inline-block text-gray-300 hover:text-white text-sm transition">
+                <a href="#repo-scanner" className="hidden lg:inline-block text-gray-300 hover:text-white text-sm transition">
                   Repo Scanner
                 </a>
 
-                <a href="#features" className="hidden md:inline-block text-gray-300 hover:text-white text-sm transition">
+                <a href="#features" className="hidden lg:inline-block text-gray-300 hover:text-white text-sm transition">
                   Features
                 </a>
 
-                <a href="#faq" className="hidden md:inline-block text-gray-300 hover:text-white text-sm transition">
+                <a href="#faq" className="hidden lg:inline-block text-gray-300 hover:text-white text-sm transition">
                   FAQ
                 </a>
               </>

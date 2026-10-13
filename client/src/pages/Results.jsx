@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
-import { ArrowLeft, X, FileSpreadsheet, AlertTriangle, CheckCircle2, XCircle, ArrowRight, Loader2, RefreshCw, Home as HomeIcon, Mail, Lock, Sliders, Sparkles } from "lucide-react";
+import { ArrowLeft, X, FileSpreadsheet, AlertTriangle, CheckCircle2, XCircle, ArrowRight, Loader2, RefreshCw, Home as HomeIcon, Mail, Lock, Sliders, Sparkles, Users } from "lucide-react";
 import { saveLead } from "../api/leadApi";
 import { getReportById } from "../api/reportApi";
 import Toast from "../components/Toast";
@@ -286,6 +286,8 @@ const Results = () => {
       "Tool",
       "Original Plan",
       "Seats",
+      "Utilization (%)",
+      "Ghost Seats (Idle)",
       "Monthly Cost ($)",
       "Optimized Plan",
       "Monthly Savings ($)",
@@ -299,6 +301,8 @@ const Results = () => {
       `"${tool.tool || ""}"`,
       `"${tool.plan || ""}"`,
       tool.seats || 1,
+      `${tool.utilization ?? 100}%`,
+      tool.ghostSeats || 0,
       tool.monthlyCost || 0,
       `"${tool.optimizedPlan || ""}"`,
       tool.monthlySavings || 0,
@@ -312,19 +316,21 @@ const Results = () => {
       `"TOTAL AUDIT SUMMARY"`,
       `""`,
       results.auditedTools.reduce((acc, t) => acc + (Number(t.seats) || 1), 0),
+      `""`,
+      results.ghostSeatsTotal || 0,
       results.auditedTools.reduce((acc, t) => acc + (Number(t.monthlyCost) || 0), 0),
-      `"Optimization Score: ${score}/100"`,
+      `"Score: ${score}/100"`,
       results.totalMonthlySavings || 0,
       results.totalAnnualSavings || 0,
       `"SpendPilot AI Automated Audit"`,
       `""`
     ]);
 
-    // 3. Assemble CSV string
-    const csvContent = [
+    // 3. Assemble CSV string with Excel UTF-8 BOM
+    const csvContent = "\uFEFF" + [
       headers.join(","),
       ...rows.map(row => row.join(","))
-    ].join("\n");
+    ].join("\r\n");
 
     // 4. Create and trigger download
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -1012,6 +1018,37 @@ const Results = () => {
         </div>
         </div>
 
+        {/* GHOST LICENSE SHELFWARE ALERTS */}
+        {results.ghostSeatAlerts && results.ghostSeatAlerts.length > 0 && (
+          <div className="space-y-4 mb-12 no-print">
+            <h3 className="text-xl font-bold text-amber-400 flex items-center gap-2">
+              <Users className="text-amber-500 animate-pulse" size={20} />
+              Dormant "Ghost Seat" Shelfware Alerts ({results.ghostSeatsTotal} Inactive Licenses)
+            </h3>
+            <div className="grid gap-4">
+              {results.ghostSeatAlerts.map((alert, idx) => (
+                <div key={idx} className="bg-amber-950/15 border border-amber-500/25 p-5 sm:p-6 rounded-3xl relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl">
+                  <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-transparent pointer-events-none"></div>
+                  <div>
+                    <h4 className="text-amber-400 font-bold text-sm sm:text-base mb-1">
+                      {alert.tool} — {alert.ghostSeats} Unused Seats Detected
+                    </h4>
+                    <p className="text-gray-300 text-xs sm:text-sm leading-relaxed max-w-2xl">
+                      {alert.message} Decommissioning dormant accounts reduces software waste without touching active developer workflows.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 self-start md:self-auto shrink-0">
+                    <div className="text-left md:text-right bg-amber-500/10 border border-amber-500/20 px-3.5 py-2 rounded-2xl">
+                      <p className="text-[9px] text-amber-300 font-semibold uppercase tracking-wider">Direct Waste Recaptured</p>
+                      <p className="text-base sm:text-lg font-black text-amber-400">+${alert.monthlyWaste}/mo</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* REDUNDANCY OVERLAP ALERTS */}
         {redundancyAlerts.length > 0 && (
           <div className="space-y-4 mb-12 no-print">
@@ -1080,6 +1117,12 @@ const Results = () => {
                     <span className="bg-blue-500/10 border border-blue-500/20 text-blue-400 px-4 py-2 rounded-full text-sm">
                       Suggested: {tool.optimizedPlan}
                     </span>
+
+                    {tool.ghostSeats > 0 && (
+                      <span className="bg-amber-500/10 border border-amber-500/20 text-amber-400 px-3.5 py-1.5 rounded-full text-xs font-semibold">
+                        {tool.ghostSeats} Ghost Seats ({100 - tool.utilization}% idle)
+                      </span>
+                    )}
                   </div>
                 </div>
 

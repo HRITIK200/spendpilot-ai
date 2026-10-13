@@ -69,28 +69,57 @@ export const generateAudit = (tools) => {
 
     totalMonthlySavings += savings;
 
+    // RULE 4: Ghost Seat & Utilization Idle Waste Detection
+    const utilPct = tool.utilization !== undefined ? Number(tool.utilization) : 100;
+    let ghostSeats = 0;
+    let ghostSeatMonthlyWaste = 0;
+
+    if (utilPct < 100 && Number(tool.seats) > 1) {
+      ghostSeats = Math.max(1, Math.round(Number(tool.seats) * (1 - utilPct / 100)));
+      const unitPrice = Number(tool.monthlyCost) || (tool.seats ? Math.round(savings > 0 ? (savings / tool.seats) : 20) : 20);
+      ghostSeatMonthlyWaste = ghostSeats * unitPrice;
+    }
+
     return {
       ...tool,
       optimizedPlan,
       recommendation,
       reasoning,
+      utilization: utilPct,
+      ghostSeats,
+      ghostSeatMonthlyWaste,
       monthlySavings: savings,
       annualSavings: savings * 12,
     };
   });
 
-  // Optimization score
+  // Calculate global ghost seat metrics
+  const ghostSeatsTotal = auditedTools.reduce((acc, t) => acc + (t.ghostSeats || 0), 0);
+  const ghostSeatsWasteMonthly = auditedTools.reduce((acc, t) => acc + (t.ghostSeatMonthlyWaste || 0), 0);
+  const ghostSeatAlerts = auditedTools
+    .filter((t) => t.ghostSeats > 0)
+    .map((t) => ({
+      tool: t.tool,
+      ghostSeats: t.ghostSeats,
+      totalSeats: t.seats,
+      monthlyWaste: t.ghostSeatMonthlyWaste,
+      message: `Detected ${t.ghostSeats} dormant ${t.tool} seat${t.ghostSeats > 1 ? "s" : ""} (${Math.round((t.ghostSeats / t.seats) * 100)}% idle). Decommissioning saves $${t.ghostSeatMonthlyWaste}/mo.`,
+    }));
 
+  // Optimization score
   const optimizationScore = Math.max(
-    100 - totalMonthlySavings,
+    100 - totalMonthlySavings - Math.round(ghostSeatsWasteMonthly * 0.1),
     65
   );
 
   return {
     auditedTools,
     totalMonthlySavings,
-    totalAnnualSavings:
-      totalMonthlySavings * 12,
+    totalAnnualSavings: totalMonthlySavings * 12,
     optimizationScore,
+    ghostSeatsTotal,
+    ghostSeatsWasteMonthly,
+    ghostSeatsWasteAnnual: ghostSeatsWasteMonthly * 12,
+    ghostSeatAlerts,
   };
 };

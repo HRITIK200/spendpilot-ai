@@ -94,4 +94,24 @@ describe("Audit Engine", () => {
     ).toBe(240);
   });
 
+  it("should calculate ghost seats and waste when utilization is below 100%", () => {
+    const tools = [
+      {
+        tool: "Cursor",
+        plan: "Pro",
+        seats: 20,
+        monthlyCost: 20,
+        utilization: 60, // 40% idle = 8 ghost seats
+        useCase: "coding",
+      },
+    ];
+
+    const result = generateAudit(tools);
+
+    expect(result.ghostSeatsTotal).toBe(8);
+    expect(result.ghostSeatsWasteMonthly).toBe(160); // 8 seats * $20
+    expect(result.ghostSeatAlerts.length).toBe(1);
+    expect(result.ghostSeatAlerts[0].message).toContain("8 dormant Cursor seats");
+  });
+
 });
