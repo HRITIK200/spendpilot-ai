@@ -14,7 +14,10 @@ import {
   ExternalLink,
   X,
   FileSpreadsheet,
-  Command
+  Command,
+  Calculator,
+  History,
+  Download
 } from "lucide-react";
 
 export default function CommandPalette({ isOpen, onClose }) {
@@ -45,6 +48,22 @@ export default function CommandPalette({ isOpen, onClose }) {
         const el = document.getElementById("repo-scanner");
         if (el) el.scrollIntoView({ behavior: "smooth" });
       },
+    },
+    {
+      id: "token-calculator",
+      category: "Audit & Simulator",
+      title: "Multi-Model Token Cost Calculator",
+      description: "Compare GPT-4o, Claude 3.5 Sonnet, Gemini & DeepSeek pricing and caching",
+      icon: <Calculator size={16} className="text-purple-400" />,
+      action: () => navigate("/results"),
+    },
+    {
+      id: "audit-history",
+      category: "Audit & Simulator",
+      title: "Audit History & Version Diff",
+      description: "View saved audit snapshots and side-by-side optimization progress",
+      icon: <History size={16} className="text-emerald-400" />,
+      action: () => navigate("/results"),
     },
     {
       id: "preset-engineering",

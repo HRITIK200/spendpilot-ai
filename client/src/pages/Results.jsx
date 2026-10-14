@@ -1,11 +1,38 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
-import { ArrowLeft, X, FileSpreadsheet, AlertTriangle, CheckCircle2, XCircle, ArrowRight, Loader2, RefreshCw, Home as HomeIcon, Mail, Lock, Sliders, Sparkles, Users } from "lucide-react";
+import { 
+  ArrowLeft, 
+  X, 
+  FileSpreadsheet, 
+  AlertTriangle, 
+  CheckCircle2, 
+  XCircle, 
+  ArrowRight, 
+  Loader2, 
+  RefreshCw, 
+  Home as HomeIcon, 
+  Mail, 
+  Lock, 
+  Sliders, 
+  Sparkles, 
+  Users,
+  Download,
+  Share2,
+  History,
+  Calculator,
+  GitCompare,
+  CalendarCheck
+} from "lucide-react";
 import { saveLead } from "../api/leadApi";
 import { getReportById } from "../api/reportApi";
 import Toast from "../components/Toast";
 import WhatIfSimulator from "../components/WhatIfSimulator";
 import EmailReportModal from "../components/EmailReportModal";
+import TokenCalculator from "../components/TokenCalculator";
+import AuditHistoryModal from "../components/AuditHistoryModal";
+import ShareAuditModal from "../components/ShareAuditModal";
+import { generateCertifiedPdfReport } from "../utils/pdfGenerator";
+import { saveAuditToHistory } from "../utils/auditHistory";
 import { useAuth } from "../context/AuthContext";
 import { DEMO_AUDITS } from "../data/demoAudits";
 
@@ -24,6 +51,11 @@ const Results = () => {
   const [toast, setToast] = useState(null);
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [simTrigger, setSimTrigger] = useState(null);
+  const [billingCycle, setBillingCycle] = useState("monthly"); // "monthly" | "annual"
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showTokenCalculator, setShowTokenCalculator] = useState(false);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
 
   const handleLeadSubmit = async () => {
     const trimmedEmail = email.trim();
@@ -140,6 +172,59 @@ const Results = () => {
       setLoading(false);
     }
   }, [id, location.state]);
+
+  // Automatically persist audit snapshot to local history
+  useEffect(() => {
+    if (results && results.auditedTools && results.auditedTools.length > 0) {
+      saveAuditToHistory({
+        id: results._id || `audit-${Date.now()}`,
+        companyName: results.companyName || company || "My Organization",
+        repoName: results.repoName,
+        totalMonthlySpend: results.auditedTools.reduce((acc, t) => acc + (Number(t.monthlyCost) || 0) * (Number(t.seats) || 1), 0),
+        totalAnnualSpend: (results.auditedTools.reduce((acc, t) => acc + (Number(t.monthlyCost) || 0) * (Number(t.seats) || 1), 0)) * 12,
+        totalMonthlySavings: results.totalMonthlySavings || 0,
+        totalAnnualSavings: results.totalAnnualSavings || 0,
+        optimizationScore: results.optimizationScore || 85,
+        ghostSeatsTotal: results.ghostSeatsTotal || 0,
+        ghostSeatsWasteMonthly: results.ghostSeatsWasteMonthly || 0,
+        tools: results.auditedTools,
+        modelWarnings: results.modelWarnings || [],
+      });
+    }
+  }, [results, company]);
+
+  const annualDiscountRate = 0.18; // 18% enterprise discount for annual commitments
+  const baseMonthlySpend = results?.auditedTools?.reduce((acc, t) => acc + (Number(t.monthlyCost) || 0) * (Number(t.seats) || 1), 0) || 0;
+  const annualCommitmentSavings = billingCycle === "annual" ? Math.round(baseMonthlySpend * 12 * annualDiscountRate) : 0;
+  const effectiveMonthlySavings = (Number(results?.totalMonthlySavings) || 0) + Math.round(annualCommitmentSavings / 12);
+  const effectiveAnnualSavings = (Number(results?.totalAnnualSavings) || 0) + annualCommitmentSavings;
+
+  const handleDownloadCertifiedPdf = () => {
+    try {
+      setGeneratingPdf(true);
+      const fileName = generateCertifiedPdfReport({
+        reportTitle: id ? "Verified Public AI FinOps Audit" : "AI FinOps & Tooling Optimization Audit",
+        companyName: company || results?.companyName || "Engineering Organization",
+        repoName: results?.repoName,
+        totalMonthlySpend: billingCycle === "annual" ? Math.round(baseMonthlySpend * (1 - annualDiscountRate)) : baseMonthlySpend,
+        totalAnnualSpend: (billingCycle === "annual" ? Math.round(baseMonthlySpend * (1 - annualDiscountRate)) : baseMonthlySpend) * 12,
+        totalMonthlySavings: effectiveMonthlySavings,
+        totalAnnualSavings: effectiveAnnualSavings,
+        optimizationScore: score,
+        tools: results?.auditedTools || [],
+        ghostSeatsTotal: results?.ghostSeatsTotal || 0,
+        ghostSeatsWasteMonthly: results?.ghostSeatsWasteMonthly || 0,
+        modelWarnings: results?.modelWarnings || [],
+      });
+      setToast({ message: `Certified PDF Report downloaded: ${fileName}`, type: "success" });
+    } catch (err) {
+      console.error("PDF generation failed:", err);
+      setToast({ message: "PDF export failed. Opening print dialog.", type: "error" });
+      window.print();
+    } finally {
+      setGeneratingPdf(false);
+    }
+  };
 
   const [compareToolId, setCompareToolId] = useState(null);
 
@@ -668,6 +753,41 @@ const Results = () => {
           </p>
         </div>
 
+        {/* BILLING COMMITMENT TOGGLE */}
+        <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 no-print">
+          <div className="flex items-center gap-2">
+            <CalendarCheck size={16} className="text-blue-400" />
+            <span className="text-xs text-gray-300 font-medium">Enterprise Contract Commitment:</span>
+            {billingCycle === "annual" && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/20">
+                +18% Annual Upfront Discount Applied
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center p-1 rounded-xl bg-black/60 border border-white/10 text-xs font-semibold">
+            <button
+              type="button"
+              onClick={() => setBillingCycle("monthly")}
+              className={`px-3 py-1.5 rounded-lg transition ${
+                billingCycle === "monthly" ? "bg-blue-600 text-white shadow" : "text-gray-400 hover:text-white"
+              }`}
+            >
+              Monthly Billing
+            </button>
+            <button
+              type="button"
+              onClick={() => setBillingCycle("annual")}
+              className={`px-3 py-1.5 rounded-lg transition flex items-center gap-1 ${
+                billingCycle === "annual" ? "bg-emerald-600 text-white shadow" : "text-gray-400 hover:text-white"
+              }`}
+            >
+              <span>Annual Contract</span>
+              <span className="text-[10px] bg-white/20 px-1 rounded text-white font-bold">-18%</span>
+            </button>
+          </div>
+        </div>
+
         {/* HERO STATS */}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
@@ -679,11 +799,11 @@ const Results = () => {
             </p>
 
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mb-2 text-emerald-400">
-              ${results.totalMonthlySavings}
+              ${effectiveMonthlySavings.toLocaleString()}
             </h2>
 
             <p className="text-gray-400 text-xs sm:text-sm">
-              Potential direct recurring reduction
+              {billingCycle === "annual" ? "Including 18% annual commitment discount" : "Potential direct recurring reduction"}
             </p>
           </div>
 
@@ -694,7 +814,7 @@ const Results = () => {
             </p>
 
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mb-2 text-blue-400">
-              ${results.totalAnnualSavings}
+              ${effectiveAnnualSavings.toLocaleString()}
             </h2>
 
             <p className="text-gray-400 text-xs sm:text-sm">
@@ -757,46 +877,72 @@ const Results = () => {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row flex-wrap gap-2.5 sm:gap-4 mb-10 sm:mb-12 no-print">
-          <button 
-              onClick={() => {
-                const reportUrl = (results._id && !String(results._id).startsWith("demo-"))
-                  ? `${window.location.origin}/report/${results._id}`
-                  : window.location.href;
-                navigator.clipboard.writeText(reportUrl);
-
-                setCopied(true);
-                setToast({ message: "Report link copied to clipboard!", type: "success" });
-                setTimeout(() => { setCopied(false); }, 2000);
-              }}
-              className="flex-1 sm:flex-none text-center bg-blue-500 hover:bg-blue-600 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl transition-all duration-300 text-xs sm:text-sm font-semibold shadow-lg"
-          >
-            {copied? "Link Copied!" : "Copy Public Report Link"}
-          </button>
-          
+        {/* INTERACTIVE ACTION TOOLBAR */}
+        <div className="flex flex-col sm:flex-row flex-wrap gap-2.5 sm:gap-3 mb-10 sm:mb-12 no-print">
           <button
-            onClick={() => window.print()}
-            className="flex-1 sm:flex-none text-center bg-purple-600 hover:bg-purple-700 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl transition-all duration-300 font-semibold text-xs sm:text-sm shadow-lg"
+            onClick={handleDownloadCertifiedPdf}
+            disabled={generatingPdf}
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl transition-all duration-300 font-semibold text-xs sm:text-sm text-white shadow-lg shadow-blue-500/20 active:scale-95"
           >
-            Download PDF Report
+            {generatingPdf ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <Download size={16} />
+            )}
+            <span>Download Certified PDF</span>
+          </button>
+
+          <button
+            onClick={() => setShowTokenCalculator(!showTokenCalculator)}
+            className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl transition-all duration-300 font-semibold text-xs sm:text-sm shadow-lg border ${
+              showTokenCalculator
+                ? "bg-purple-600 text-white border-purple-500"
+                : "bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border-purple-500/30"
+            }`}
+          >
+            <Calculator size={16} />
+            <span>{showTokenCalculator ? "Hide Token Calculator" : "Token Cost Calculator"}</span>
+          </button>
+
+          <button
+            onClick={() => setShowHistoryModal(true)}
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-gray-200 hover:text-white border border-white/10 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl transition-all duration-300 font-semibold text-xs sm:text-sm shadow-lg"
+          >
+            <History size={16} />
+            <span>Audit History & Diff</span>
+          </button>
+
+          <button
+            onClick={() => setShowShareModal(true)}
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl transition-all duration-300 font-semibold text-xs sm:text-sm shadow-lg"
+          >
+            <Share2 size={16} />
+            <span>Share Report</span>
           </button>
 
           <button
             onClick={handleExportCSV}
-            className="flex-1 sm:flex-none text-center justify-center bg-emerald-600 hover:bg-emerald-700 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl transition-all duration-300 font-semibold text-xs sm:text-sm shadow-lg flex items-center gap-2"
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl transition-all duration-300 font-semibold text-xs sm:text-sm shadow-lg"
           >
             <FileSpreadsheet size={16} />
-            Export CSV
+            <span>Export CSV</span>
           </button>
 
           <button
             onClick={() => setShowEmailModal(true)}
-            className="flex-1 sm:flex-none text-center justify-center bg-indigo-600 hover:bg-indigo-750 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl transition-all duration-300 font-semibold text-xs sm:text-sm shadow-lg flex items-center gap-2"
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl transition-all duration-300 font-semibold text-xs sm:text-sm shadow-lg"
           >
             <Mail size={16} />
-            Email Executive Report
+            <span>Email Report</span>
           </button>
         </div>
+
+        {/* COLLAPSIBLE MULTI-MODEL TOKEN CALCULATOR */}
+        {showTokenCalculator && (
+          <div className="mb-12 no-print animate-fadeIn">
+            <TokenCalculator />
+          </div>
+        )}
 
         {/* TOP SAVINGS INSIGHT OR FULLY OPTIMIZED BANNER */}
         {topSavingsTool && Number(topSavingsTool.monthlySavings) > 0 ? (
@@ -1453,6 +1599,24 @@ const Results = () => {
         onEmailSent={(msg) => {
           setToast({ message: msg || "Executive report dispatched successfully!", type: "success" });
         }}
+      />
+
+      {/* AUDIT HISTORY & DIFF MODAL */}
+      <AuditHistoryModal
+        isOpen={showHistoryModal}
+        onClose={() => setShowHistoryModal(false)}
+        onLoadAudit={(audit) => {
+          setResults(audit);
+          setToast({ message: `Loaded audit snapshot from ${audit.dateFormatted}`, type: "success" });
+        }}
+      />
+
+      {/* SHARE AUDIT MODAL */}
+      <ShareAuditModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        auditData={results}
+        setToast={setToast}
       />
 
       {toast && (
