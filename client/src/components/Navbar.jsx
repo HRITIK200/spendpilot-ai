@@ -87,7 +87,7 @@ function Navbar() {
 
   return (
     <>
-      <nav className="w-full border-b border-white/10 backdrop-blur-md sticky top-0 z-50 bg-[#030712]/90 no-print">
+      <nav className="fixed top-0 left-0 right-0 z-40 w-full border-b border-white/10 backdrop-blur-md bg-[#030712]/90 no-print transition-all duration-200">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between">
           {/* LOGO */}
           <Link to="/" className="text-base xs:text-lg sm:text-2xl font-bold tracking-tight text-white flex items-center gap-1.5 shrink-0">
@@ -186,17 +186,20 @@ function Navbar() {
         </div>
       </nav>
 
+      {/* Structural Spacer so underlying page content is never obscured by the fixed navbar */}
+      <div className="h-[52px] sm:h-[64px] no-print shrink-0" aria-hidden="true" />
+
       {/* DRAWER OVERLAY */}
       {isDrawerOpen && (
         <div 
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 no-print transition-opacity"
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] no-print transition-opacity"
           onClick={() => setIsDrawerOpen(false)}
         />
       )}
 
       {/* SIDE DRAWER (Fully Responsive on All Devices) */}
       <div 
-        className={`fixed inset-y-0 right-0 w-full sm:w-[420px] max-w-[100vw] bg-[#090d16] border-l border-white/10 z-50 p-4 sm:p-6 shadow-2xl transition-transform duration-300 transform no-print flex flex-col ${
+        className={`fixed inset-y-0 right-0 w-full sm:w-[420px] max-w-[100vw] bg-[#090d16] border-l border-white/10 z-[70] p-4 sm:p-6 shadow-2xl transition-transform duration-300 transform no-print flex flex-col ${
           isDrawerOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
