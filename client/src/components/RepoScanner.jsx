@@ -9,13 +9,15 @@ import {
   CheckCircle2, 
   AlertTriangle, 
   ExternalLink, 
-  DollarSign, 
   Users, 
   Cpu, 
   Layers, 
   RotateCcw,
   Zap,
-  TrendingDown
+  TrendingDown,
+  Code2,
+  ShieldCheck,
+  PackageCheck
 } from "lucide-react";
 import { scanGitHubRepository, DEMO_REPOSITORIES } from "../utils/repoScanner";
 
@@ -29,8 +31,8 @@ export default function RepoScanner({ onExportToAudit, isModal = false }) {
 
   const scanSteps = [
     "Connecting to GitHub repository...",
-    "Inspecting dependency manifests (package.json, requirements.txt)...",
-    "Analyzing AI model invocations & IDE configs (.cursorrules)...",
+    "Inspecting dependency manifests (package.json, pyproject, requirements)...",
+    "Analyzing AI model invocations & IDE configs (.cursorrules, copilot)...",
     "Modeling team size & FinOps cost optimization...",
   ];
 
@@ -72,18 +74,26 @@ export default function RepoScanner({ onExportToAudit, isModal = false }) {
   };
 
   const handleProceedToAudit = () => {
-    if (!scanResult?.prefilledTools) return;
+    const toolsToSend = scanResult?.prefilledTools || [];
+    const repoIdentifier = scanResult?.repository
+      ? `${scanResult.repository.owner}/${scanResult.repository.repo}`
+      : "";
+
     if (onExportToAudit) {
-      onExportToAudit(scanResult.prefilledTools);
+      onExportToAudit(toolsToSend);
     } else {
       navigate("/audit", {
         state: { 
-          prefilledTools: scanResult.prefilledTools,
-          repoName: `${scanResult.repository.owner}/${scanResult.repository.repo}`
+          prefilledTools: toolsToSend,
+          repoName: repoIdentifier
         }
       });
     }
   };
+
+  const hasBillableTools = scanResult && scanResult.detectedTools?.length > 0;
+  const hasFrameworks = scanResult && scanResult.detectedFrameworks?.length > 0;
+  const hasAnyAiTech = hasBillableTools || hasFrameworks;
 
   return (
     <section 
@@ -270,7 +280,7 @@ export default function RepoScanner({ onExportToAudit, isModal = false }) {
                   onClick={handleProceedToAudit}
                   className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold shadow-lg shadow-blue-500/25 transition active:scale-95"
                 >
-                  <span>Auto-Fill Audit Form</span>
+                  <span>{hasBillableTools ? "Auto-Fill Audit Form" : "Open Audit Simulator"}</span>
                   <ArrowRight size={15} />
                 </button>
               </div>
@@ -284,7 +294,7 @@ export default function RepoScanner({ onExportToAudit, isModal = false }) {
                   ${scanResult.totalMonthlySpend}/mo
                 </div>
                 <p className="text-[10px] text-gray-500 mt-0.5">
-                  Based on {scanResult.estimatedSeats} active dev seats
+                  {hasBillableTools ? `Based on ${scanResult.estimatedSeats} active dev seats` : "No billable AI seats detected"}
                 </p>
               </div>
 
@@ -294,10 +304,10 @@ export default function RepoScanner({ onExportToAudit, isModal = false }) {
                   Projected Savings
                 </p>
                 <div className="text-2xl font-black text-emerald-400 mt-1">
-                  +${scanResult.estimatedSavings}/mo
+                  {scanResult.estimatedSavings > 0 ? `+$${scanResult.estimatedSavings}/mo` : "$0/mo"}
                 </div>
                 <p className="text-[10px] text-emerald-400/80 mt-0.5">
-                  ${scanResult.annualSavings}/year optimized
+                  {scanResult.estimatedSavings > 0 ? `$${scanResult.annualSavings}/year optimized` : "No waste identified"}
                 </p>
               </div>
 
@@ -310,64 +320,147 @@ export default function RepoScanner({ onExportToAudit, isModal = false }) {
                   {scanResult.estimatedSeats} seats
                 </div>
                 <p className="text-[10px] text-gray-500 mt-0.5">
-                  Contributor headcount heuristic
+                  Repository contributor scale
                 </p>
               </div>
 
               <div className="bg-white/[0.03] border border-blue-500/20 rounded-2xl p-4">
                 <p className="text-[11px] font-semibold text-blue-400 uppercase tracking-wider flex items-center gap-1">
                   <Cpu size={13} />
-                  Detected AI Tools
+                  Detected AI Tech
                 </p>
                 <div className="text-2xl font-black text-blue-300 mt-1">
-                  {scanResult.detectedTools.length} stack items
+                  {scanResult.detectedTools.length + (scanResult.detectedFrameworks?.length || 0)} items
                 </div>
                 <p className="text-[10px] text-gray-500 mt-0.5">
-                  Auto-mapped to FinOps tiers
+                  {scanResult.detectedTools.length} billable, {scanResult.detectedFrameworks?.length || 0} open-source
                 </p>
               </div>
             </div>
 
-            {/* DETECTED AI STACK CARDS */}
-            <div className="space-y-3">
-              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Layers size={13} className="text-blue-400" />
-                Detected AI & Engineering Tooling
-              </h4>
+            {/* CASE 1: HONEST ZERO-AI DETECTION STATE */}
+            {!hasAnyAiTech && (
+              <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+                <div className="space-y-1.5">
+                  <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
+                    <ShieldCheck size={16} />
+                    <span>No Billable AI Dependencies Detected</span>
+                  </div>
+                  <h4 className="text-base font-bold text-white">
+                    Clean Baseline Codebase
+                  </h4>
+                  <p className="text-xs text-gray-400 max-w-2xl leading-relaxed">
+                    We inspected package manifests, Python requirements, and configuration files for <strong className="text-gray-300">{scanResult.repository.owner}/{scanResult.repository.repo}</strong>. No paid LLM APIs or AI IDE plugins were detected in this codebase.
+                  </p>
+                  <p className="text-[11px] text-gray-500 pt-1">
+                    Zero AI subscription waste found ($0/mo projected spend). If your team uses uncommitted SaaS seats (like web ChatGPT Plus or Claude Team), you can enter them manually in the Audit Simulator.
+                  </p>
+                </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                {scanResult.detectedTools.map((tool, idx) => (
-                  <div
-                    key={idx}
-                    className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-white/20 transition flex flex-col justify-between"
+                <div className="flex flex-col sm:flex-row gap-2.5 w-full md:w-auto shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => handlePresetClick(DEMO_REPOSITORIES[0].url)}
+                    className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 text-xs font-semibold transition"
                   >
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-bold text-white flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-blue-400" />
-                          {tool.tool}
+                    Try AI Demo Repo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleProceedToAudit}
+                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-lg shadow-blue-500/20"
+                  >
+                    <span>Manual Audit Entry</span>
+                    <ArrowRight size={14} />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* CASE 2: BILLABLE COMMERCIAL AI SERVICES */}
+            {hasBillableTools && (
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <Layers size={13} className="text-blue-400" />
+                  Commercial AI Subscriptions & API Services
+                </h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                  {scanResult.detectedTools.map((tool, idx) => (
+                    <div
+                      key={idx}
+                      className="p-4 rounded-2xl bg-white/[0.03] border border-blue-500/20 hover:border-blue-500/40 transition flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-bold text-white flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-blue-400" />
+                            {tool.tool}
+                          </span>
+                          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                            {tool.category}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-400 mt-2 font-mono break-all">
+                          {tool.evidence}
+                        </p>
+                      </div>
+
+                      <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between text-xs">
+                        <span className="text-gray-400">
+                          Mapped Plan: <strong className="text-gray-200">{tool.defaultPlan}</strong>
                         </span>
-                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                          {tool.category}
+                        <span className="text-emerald-400 font-bold">
+                          ${tool.planCost}/mo
                         </span>
                       </div>
-                      <p className="text-xs text-gray-400 mt-2 font-mono">
-                        {tool.evidence}
-                      </p>
                     </div>
-
-                    <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between text-xs">
-                      <span className="text-gray-400">
-                        Mapped Plan: <strong className="text-gray-200">{tool.defaultPlan}</strong>
-                      </span>
-                      <span className="text-emerald-400 font-bold">
-                        ${tool.planCost}/seat/mo
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* CASE 3: OPEN-SOURCE AI FRAMEWORKS & VECTOR DATABASES */}
+            {hasFrameworks && (
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <Code2 size={13} className="text-purple-400" />
+                  AI Orchestration, Vector Storage & Open-Source Libraries
+                </h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                  {scanResult.detectedFrameworks.map((fw, idx) => (
+                    <div
+                      key={idx}
+                      className="p-4 rounded-2xl bg-white/[0.02] border border-purple-500/20 hover:border-purple-500/30 transition flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-bold text-white flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-purple-400" />
+                            {fw.name}
+                          </span>
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                            {fw.license}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-gray-400 mt-1 font-medium">
+                          {fw.category}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1.5 font-mono break-all">
+                          {fw.evidence}
+                        </p>
+                      </div>
+
+                      <div className="mt-2.5 pt-2.5 border-t border-white/5 flex items-center justify-between text-[11px] text-gray-400">
+                        <span className="text-gray-500">Infrastructure Layer</span>
+                        <span className="text-gray-300 font-medium">Zero SaaS Seat Fee</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* MODEL UPGRADE & MIGRATION ADVISORIES */}
             {scanResult.modelWarnings && scanResult.modelWarnings.length > 0 && (
@@ -388,10 +481,16 @@ export default function RepoScanner({ onExportToAudit, isModal = false }) {
             <div className="p-5 rounded-2xl bg-gradient-to-r from-blue-900/30 via-indigo-900/20 to-purple-900/30 border border-blue-500/20 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div>
                 <h4 className="text-sm sm:text-base font-bold text-white">
-                  Ready to simulate scenarios and generate your certified audit?
+                  {hasBillableTools 
+                    ? "Ready to simulate scenarios and generate your certified audit?" 
+                    : "Want to model potential AI tools for this repository?"
+                  }
                 </h4>
                 <p className="text-xs text-gray-300 mt-0.5">
-                  Transfer these {scanResult.detectedTools.length} detected tools with {scanResult.estimatedSeats} seats into the interactive simulator.
+                  {hasBillableTools 
+                    ? `Transfer these ${scanResult.detectedTools.length} detected tools with ${scanResult.estimatedSeats} seats into the interactive simulator.`
+                    : "Open the Audit Simulator to test adding Cursor, Copilot, or LLM APIs to project team costs."
+                  }
                 </p>
               </div>
 
@@ -400,7 +499,7 @@ export default function RepoScanner({ onExportToAudit, isModal = false }) {
                 onClick={handleProceedToAudit}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-500/25 transition active:scale-95 shrink-0"
               >
-                <span>Transfer to Audit Simulator</span>
+                <span>{hasBillableTools ? "Transfer to Audit Simulator" : "Open Audit Simulator"}</span>
                 <ArrowRight size={16} />
               </button>
             </div>
